@@ -1,0 +1,11 @@
+.idea/
+__pycache__/
+.ipynb_checkpoints/
+.vscode/
+
+# exps
+*.pt
+*.pth
+psds_student/
+psds_teacher/
+pretrained_model/*
