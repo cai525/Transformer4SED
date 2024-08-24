@@ -9,8 +9,8 @@ generals:
   log_level: INFO
 
 training:
-  batch_size: [4, 2, 6, 6]  # strong, synthetic, weak, unlabeled 
-  batch_size_val: 24
+  batch_size: [3, 1, 4, 4]  # strong, synthetic, weak, unlabeled 
+  batch_size_val: 32
   num_workers: 6
   seed: 21
   clip_grad: True
@@ -136,14 +136,14 @@ class_loss:
 opt:
     param_groups: 
       encoder:
-        lr: 7.5e-6
+        lr: 5.0e-6
         weight_decay: 1.0e-4
         freeze_layer: 0
         step_lr: 4
       decoder: 
-        lr: 2.0e-4
+        lr: 1.0e-4
         weight_decay: 1.0e-4
       head:
-        lr: 2.0e-4
+        lr: 1.0e-4
         weight_decay: 1.0e-4
       

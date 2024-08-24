@@ -1,1 +1,1 @@
-该目录存放了关于模型预训练的解决方案；
+This directory stores recipes for Masked Audio Model(MAM) based self-supervised training;
