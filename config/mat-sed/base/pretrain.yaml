@@ -1,0 +1,104 @@
+generals:
+  warn: False                          # show warnings
+  load_from_existed_path: False
+  batch_size: [ 4, 4, 16]
+  batch_size_val: 24
+  num_workers: 6
+  log_level: INFO
+training:
+  seed: 21
+  encoder_win: False
+  # =============================
+  scheduler_name: ExponentialDown
+  n_epochs: 15                        # number of epochs to run
+  n_epochs_cut: 10                    # number of epochs used for exponential decay
+  lr_warmup_rate: 0.1
+  lr_warmup_epochs: 1
+  # =============================
+  #data augmentations
+  transform:                           # hyperparameters for data augmentations that do not alter the label information.
+    n_transform: 1                     # 0: no augmentation below is applied. 1: same augmentation below is applied on student/teacher model input. 2: different augmentations below is applied on student/teacher model input.
+    choice: [ 1, 0, 0, 1]                # apply the chosen data augmentations: [ FilterAugment, freq_mask, add_noise, frequency disortion]
+    filter_db_range: [-12, 12]       # db range of FilterAugment to be applied on each band
+    filter_bands: [ 2, 5 ]             # range of frequency band number in FilterAugment
+    filter_minimum_bandwidth: 4
+    filter_type: step
+    freq_mask_ratio: 10                # maximum ratio of freuqnecy masking range. max 1/16 of total frequnecy number will be masked
+    noise_snrs: [ 35, 40 ]             # snr of original signal wrpt the noise added.
+ 
+feature:                               
+  pred_len: 1000
+  n_mels: 128
+  n_fft: 1024
+  hopsize: 320
+  win_length: 800
+  fmin: 0.0
+  fmax: None
+  audio_max_len: 10
+  sr: 32000
+  net_subsample: 1
+
+
+PaSST_SED:
+  passt_feature_layer: 10                     # from which layer in AST to get patch embeddings
+  f_pool: "mean_pool"             # frequency-wise information pooling type
+  decode_ratio: 10                     # decode ratio in local gru decoder
+  at_adapter: True
+  passt_at_feature_layer: "frame_mean"
+  decoder: "transformerXL"
+  decoder_layer_num: 3
+  decoder_pos_emd_len: 1000
+  mlm: True
+  mlm_dict:
+    strategy: "block"
+    block_width: 10
+    mask_rate: 0.75
+    out_dim: 768
+
+dataset:                               # change with your paths if different.
+    weak_folder: /home/cpf/data/dcase/audio/train/weak/weak_32k
+    weak_tsv: meta/train/weak.tsv
+    unlabeled_folder: /home/cpf/data/dcase/audio/train/unlabel/unlabel_in_domain_32k
+    # audioset_balance: /home/mnt/mydataset/audioset/balanced_train_segments
+
+    strong_folder: /home/cpf/data/dcase/audio/train/strong/strong_32k/
+    strong_tsv: meta/train/audioset_strong.tsv
+
+    val_folder: /home/cpf/data/dcase/audio/validation/validation_32k/
+    val_tsv: meta/validation/validation.tsv
+    val_dur: meta/validation/validation_durations.tsv
+
+    test_folder: /home/cpf/data/dcase/audio/validation/validation_32k/
+    test_tsv: meta/validation/validation.tsv
+    test_dur: meta/validation/validation_durations.tsv
+
+    pubeval_folder: /home/cpf/data/dcase/audio/public/public_32k/
+    pubeval_tsv: meta/validation/ground_truth_public.tsv
+    pubeval_dur: meta/validation/public_durations.tsv
+synth_dataset:                         # change with your paths if different.
+    synth_train_folder: /home/cpf/data/dcase/audio/train/syn/soundscapes_32k
+    synth_train_tsv: meta/train/synthetic21_train/soundscapes.tsv
+    synth_train_dur: None
+    synth_val_folder: /home/cpf/data/dcase/audio/validation/validation_32k/soundscapes_32k
+    synth_val_tsv: meta/validation/synthetic21_validation/soundscapes.tsv
+    synth_val_dur: meta/validation/synthetic21_validation/durations.tsv
+
+class_loss:
+  loss_name: BCELoss
+  kwargs: 
+
+opt:
+    exponent: -0.5
+    param_groups: 
+      encoder:
+        lr: 0 
+        weight_decay: 1.0e-4
+        freeze_layer: 0
+        step_lr: 4
+      decoder: 
+        lr: 1.0e-4 
+        weight_decay: 1.0e-4
+        step_lr: 0
+      head:
+        lr: 1.0e-4
+        weight_decay: 1.0e-4

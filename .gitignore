@@ -6,6 +6,5 @@ __pycache__/
 # exps
 *.pt
 *.pth
-psds_student/
-psds_teacher/
-pretrained_model/*
+*.ckpt
+run/

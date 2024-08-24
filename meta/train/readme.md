@@ -1,0 +1,1 @@
+7 audio files in the strong dataset are lost in my downloaded dataset. The audioset_strong.tsv is an annotation without 7 lost wavs(3463 files totally).

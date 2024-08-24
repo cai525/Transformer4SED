@@ -1,0 +1,148 @@
+generals:
+  warn: False                          # show warnings
+  savepsds: False                       # save psds data
+  test_on_public_eval: False           # change test dataset to DESED Reak public_eval (default dataset is DESED Real Validation)
+  load_from_existed_path: False         # Load model in existed path instead of creating a new one if true
+  finetune_mlm: True
+  test_only: False                     # perform test without training, for the model saved in save_folder
+  validation_interval: 1
+  log_level: INFO
+
+training:
+  batch_size: [4, 2, 6, 6]  # strong, synthetic, weak, unlabeled 
+  batch_size_val: 24
+  num_workers: 6
+  seed: 21
+  clip_grad: True
+  # training schedule
+  scheduler:
+    scheduler_name: ExponentialDown
+    n_epochs: 15                        #>> number of epochs to run
+    n_epochs_cut: 10                  #>> number of epochs used for exponential warmup
+    exponent: -1
+    lr_warmup_epochs: 0
+    lr_warmup_rate: 0.1
+  self_loss_warmup: 8
+  scheduler_name: ExponentialDown
+  cons_scheduler_name: Linear
+  # loss setting
+  ema_factor: 0.999                   
+  w_weak: 0.5                         
+  w_cons_max: 2                       
+  w_cons_min: 0
+  w_weak_cons: 0.5                       
+  w_AT: 2
+  # post-processing
+  filter_type: median
+  median_window: [ 5,20, 5, 5, 5,20,20,20, 5,20]
+  val_thresholds: [0.5]                # thresholds used to compute f1 intersection in validation.
+  n_test_thresholds: 50                # number of thresholds used to compute psds in test
+  decode_weak_valid: 0                 # weak prediction masking on strong prediction,
+  decode_weak_test: 1                  # 0: no weak prediction used, 1: weak prediction masking, 2: weak SED
+  #data augmentations
+  transform:                           # hyperparameters for data augmentations that do not alter the label information.
+    n_transform: 2                     # 0: no augmentation below is applied. 1: same augmentation below is applied on student/teacher model input. 2: different augmentations below is applied on student/teacher model input.
+    choice: [ 1, 0, 0, 1]                # apply the chosen data augmentations: [ FilterAugment, freq_mask, add_noise, frequency disortion]
+    filter_db_range: [-12, 12]       
+    filter_bands: [ 2, 5 ]             # range of frequency band number in FilterAugment
+    filter_minimum_bandwidth: 4
+    filter_type: step
+    freq_mask_ratio: 10                # maximum ratio of freuqnecy masking range. max 1/16 of total frequnecy number will be masked
+    noise_snrs: [ 35, 40 ]             # snr of original signal wrpt the noise added.          # maximum ratio of freuqnecy masking range. max 1/16 of total frequnecy number will be masked
+
+
+feature:                               
+  pred_len: 1000
+  n_mels: 128
+  n_fft: 1024
+  hopsize: 320
+  win_length: 800
+  fmin: 0.0
+  fmax: None
+  audio_max_len: 10
+  sr: 32000
+  net_subsample: 1
+
+
+PaSST_SED:
+  init_kwargs:
+    passt_feature_layer: 10                     # from which layer in AST to get patch embeddings
+    f_pool: "mean_pool"             # frequency-wise information pooling type
+    decode_ratio: 10                     # decode ratio in local gru decoder
+    at_adapter: True
+    passt_at_feature_layer: "frame_mean"
+    decoder: "transformerXL"
+    decoder_layer_num: 3
+    decoder_pos_emd_len: 1000
+    mlm: False
+
+  train_stu_kwargs:
+    # windows parameters
+    encoder_win: False    # constant
+    win_param: [512, 49]
+    mix_rate: 0.5 
+    # temperature parameters
+    temp_w: 1
+  
+  train_tch_kwargs:
+    # windows parameters
+    encoder_win: False
+    win_param: [512, 49]
+    mix_rate: 0.5 
+    # temperature parameters
+    temp_w: 1
+  
+  val_kwargs:
+    # windows parameters
+    encoder_win: False
+    win_param: [512, 49]
+    mix_rate: 0.5 
+    temp_w: 0.5
+
+dataset:                               # change with your paths if different.
+  # NOTE: if you have data in 44kHz only then synth_folder will be the path where
+  # resampled data will be placed.
+    weak_folder: /home/cpf/data/dcase/audio/train/weak/weak_32k
+    weak_tsv: meta/train/weak.tsv
+    unlabeled_folder: /home/cpf/data/dcase/audio/train/unlabel/unlabel_in_domain_32k
+
+    strong_folder: /home/cpf/data/dcase/audio/train/strong/strong_32k/
+    strong_tsv: meta/train/audioset_strong.tsv
+
+    val_folder: /home/cpf/data/dcase/audio/validation/validation_32k/
+    val_tsv: meta/validation/validation.tsv
+    val_dur: meta/validation/validation_durations.tsv
+
+    test_folder: /home/cpf/data/dcase/audio/validation/validation_32k/
+    test_tsv: meta/validation/validation.tsv
+    test_dur: meta/validation/validation_durations.tsv
+
+    pubeval_folder: /home/cpf/data/dcase/audio/public/public_32k/
+    pubeval_tsv: meta/validation/ground_truth_public.tsv
+    pubeval_dur: meta/validation/public_durations.tsv
+synth_dataset:                         # change with your paths if different.
+    synth_train_folder: /home/cpf/data/dcase/audio/train/syn/soundscapes_32k
+    synth_train_tsv: meta/train/synthetic21_train/soundscapes.tsv
+    synth_train_dur: None
+    synth_val_folder: /home/cpf/data/dcase/audio/validation/validation_32k/soundscapes_32k
+    synth_val_tsv: meta/validation/synthetic21_validation/soundscapes.tsv
+    synth_val_dur: meta/validation/synthetic21_validation/durations.tsv
+
+class_loss:
+  loss_name: BCELoss
+  kwargs: 
+
+opt:
+    param_groups: 
+      encoder:
+        lr: 0 
+        weight_decay: 1.0e-4
+        freeze_layer: 0
+        step_lr: 4
+      decoder: 
+        lr: 0 
+        weight_decay: 1.0e-4
+        step_lr: 0
+      head:
+        lr: 2.0e-4
+        weight_decay: 1.0e-4

@@ -1,0 +1,1 @@
+from src.models.cnn.base import CNN
