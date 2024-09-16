@@ -8,7 +8,7 @@ def get_models_atst_cnn(configs):
     net = CRNN(
         unfreeze_atst_layer=0,
         **configs["ATST_CNN"]["init_kwargs"],
-        atst_init="/home/cpf/code/open/Transformer4SED/pretrained_model/atst.ckpt",
+        atst_init="ROOT-PATH/pretrained_model/atst.ckpt",
     )
     # ema network
     ema_net = deepcopy(net)

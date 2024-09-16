@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-root = "/home/cpf/code/open/Transformer4SED"
+root = "ROOT-PATH"
 os.chdir(root)
 sys.path.append(root)
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
     my_logger.logger.info("Total Trainable Params: %.3f M" % (count_parameters(net) * 1e-6))
 
-    model_path = "/home/cpf/code/open/Transformer4SED/pretrained_model/atst/stage_2_wo_external.ckpt"
+    model_path = "ROOT-PATH/pretrained_model/atst/stage_2_wo_external.ckpt"
     net.init_model(model_path, mode="student")
     ema_net.init_model(model_path, mode="teacher")
     #### move to gpus ########

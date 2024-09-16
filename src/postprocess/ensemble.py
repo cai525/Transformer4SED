@@ -89,8 +89,8 @@ if __name__ == "__main__":
                 ...
             ...
     """
-    root_dir = '/home/cpf/code/open/Transformer4SED/exps/dcase2024/ensemble/val/sub'  # Path to the main folder containing subfolders with prediction results
-    output_dir = '/home/cpf/code/open/Transformer4SED/exps/dcase2024/ensemble/val/res/0.7-0.3'  # Path to the output folder to save the ensemble results
+    root_dir = 'ROOT-PATH/exps/dcase2024/ensemble/val/sub'  # Path to the main folder containing subfolders with prediction results
+    output_dir = 'ROOT-PATH/exps/dcase2024/ensemble/val/res/0.7-0.3'  # Path to the output folder to save the ensemble results
     model_list = ["cnn-trans", "atst-cnn"]
     weights = np.array([0.7, 0.3])  # Example weights for each model's predictions
 

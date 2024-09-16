@@ -12,7 +12,7 @@ import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-root = "/home/cpf/code/open/Transformer4SED"
+root = "ROOT-PATH"
 os.chdir(root)
 sys.path.append(root)
 

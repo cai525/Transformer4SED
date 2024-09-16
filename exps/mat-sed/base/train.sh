@@ -1,4 +1,4 @@
-root_path="/home/cpf/code/open/Transformer4SED"
+root_path="ROOT-PATH"
 save_folder="$root_path/exps/mat-sed/base/run"
 config_folder="$root_path/config/mat-sed/base"
 

@@ -5,7 +5,7 @@ import sys
 
 import pandas as pd
 
-root = "/home/cpf/code/open/Transformer4SED"
+root = "ROOT-PATH"
 os.chdir(root)
 sys.path.append(root)
 
@@ -62,9 +62,9 @@ if __name__ == "__main__":
     print(" " * 40 + "<" * 10 + "Ensemble" + ">" * 10)
     logging.basicConfig(level=logging.INFO)
     ##############################                        TEST                        ##############################
-    save_folder = "/home/cpf/code/open/Transformer4SED/exps/dcase2024/ensemble/val/res/0.7-0.3"
-    test_tsv = "/home/cpf/code/open/Transformer4SED/meta/validation/validation.tsv"
-    test_dur = "/home/cpf/code/open/Transformer4SED/meta/validation/validation_durations.tsv"
+    save_folder = "ROOT-PATH/exps/dcase2024/ensemble/val/res/0.7-0.3"
+    test_tsv = "ROOT-PATH/meta/validation/validation.tsv"
+    test_dur = "ROOT-PATH/meta/validation/validation_durations.tsv"
     test_from_tsv_scores(save_folder, test_tsv, test_dur)
 
     print("<" * 30 + "DONE!" + ">" * 30)
