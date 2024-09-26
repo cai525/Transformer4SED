@@ -2,6 +2,7 @@
 
 Implementations of "[MAT-SED: A Masked Audio Transformer with Masked-Reconstruction Based Pre-training for Sound Event Detection](https://www.isca-archive.org/interspeech_2024/cai24_interspeech.html)" (accepted by Interspeech 2024).
 
+- ❗News: The introduction of PMAM, our latest work (submitted to ICASSP2025) has been updated to the [./recipes/pmam](./recipes/pmam/readme.md) subdirectory in this repository.
 ## Introduction
 MAT-SED (**M**asked **A**udio **T**ransformer for **S**ound **E**vent **D**etection) is a pure Transformer-based SED model.
 -  MAT-SED comprising two main components: the encoder network (green) and the context network (yellow), both of which are based on Transformer structures.
