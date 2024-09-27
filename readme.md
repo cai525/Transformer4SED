@@ -16,7 +16,7 @@ MAT-SED (**M**asked **A**udio **T**ransformer for **S**ound **E**vent **D**etect
  termed **global-local feature fusion strategy**,  as depicted in the below figure, to combine both local and global characteristics.
 <div align="center"><img src="./archive/img/sliding-windows.png" width=60%></div>
 
-## Runing
+## Running
 1. First you need to use the global replacement function, which is supported by most IDEs, to replace `ROOT-PATH` with your custom root path of the project.
 
 2. Download pretrained PaSST model weight, if you have not downloaded it before.
