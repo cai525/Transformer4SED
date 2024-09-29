@@ -16,15 +16,20 @@ MAT-SED (**M**asked **A**udio **T**ransformer for **S**ound **E**vent **D**etect
  termed **global-local feature fusion strategy**,  as depicted in the below figure, to combine both local and global characteristics.
 <div align="center"><img src="./archive/img/sliding-windows.png" width=60%></div>
 
-## Runing
-1. First you need to use the global replacement function, which is supported by most IDEs, to replace `ROOT-PATH` with your custom root path of the project.
+## Running
+1. Install required libraries.
+```shell
+pip install -r requirements.txt
+```
 
-2. Download pretrained PaSST model weight, if you have not downloaded it before.
+2. Use the global replacement function, which is supported by most IDEs, to replace `ROOT-PATH` with your custom root path of the project.
+
+3. Download pretrained PaSST model weight, if you have not downloaded it before.
 ```shell
 wget -P ./pretrained_model  https://github.com/kkoutini/PaSST/releases/download/v0.0.1-audioset/passt-s-f128-p16-s10-ap.476-swa.pt
 ``` 
 
-3. Run the training script.
+4. Run the training script.
 ``` shell
 cd  ./exps/mat-sed/base
 ./train.sh
