@@ -4,7 +4,7 @@
 Implementations of "[MAT-SED: A Masked Audio Transformer with Masked-Reconstruction Based Pre-training for Sound Event Detection](https://www.isca-archive.org/interspeech_2024/cai24_interspeech.html)" (accepted by Interspeech 2024).
 
 
-❗ News: The introduction of [PMAM](https://arxiv.org/abs/2409.17656), our latest work (submitted to ICASSP2025) has been updated to the [./recipes/pmam](./recipes/pmam/readme.md) subdirectory in this repository.
+❗ News: The introduction and demo of [PMAM](https://arxiv.org/abs/2409.17656), our latest work (submitted to ICASSP2025) have been updated to the [./recipes/pmam](./recipes/pmam/readme.md) subdirectory in this repository.
 
 ## Introduction
 MAT-SED (**M**asked **A**udio **T**ransformer for **S**ound **E**vent **D**etection) is a pure Transformer-based SED model.
@@ -22,9 +22,9 @@ MAT-SED (**M**asked **A**udio **T**ransformer for **S**ound **E**vent **D**etect
 pip install -r requirements.txt
 ```
 
-2. Use the global replacement function, which is supported by most IDEs, to replace `ROOT-PATH` with your custom root path of the project.
+2. Use the global replacement function, which is supported by most IDEs, to replace `ROOT-PATH` with your custom root path of the project. And the dataset paths in the configuration files also need to be replaced with your custom dataset paths.
 
-3. Download pretrained PaSST model weight, if you have not downloaded it before.
+3. Download the pretrained PaSST model weight, if you have not downloaded it before.
 ```shell
 wget -P ./pretrained_model  https://github.com/kkoutini/PaSST/releases/download/v0.0.1-audioset/passt-s-f128-p16-s10-ap.476-swa.pt
 ``` 

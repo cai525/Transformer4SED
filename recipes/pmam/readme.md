@@ -28,7 +28,7 @@ https://github.com/user-attachments/assets/d9f5892f-2b64-4be8-b90d-20f22a692fc5
 
 https://github.com/user-attachments/assets/ca9d2c20-8012-4950-a947-5ea773680a30
 
-
+> The demos are made by [this script](../..//src/utils/visualization/gen_video_demo.py).
 ## Citation
 ```
 @misc{cai2024prototypebasedmaskedaudio,
