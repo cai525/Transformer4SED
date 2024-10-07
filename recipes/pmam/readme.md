@@ -15,6 +15,20 @@ Implementations of "[Prototype based Masked Audio Model for Self-Supervised Lear
  are performed iteratively to enhance the quality of pseudo labels, similar to E-step and M-step in the <ins>expectation-maximization (EM) algorithm</ins>;
 - A novel <ins>  prototype-wise binary cross-entropy loss</ins> is employed instead of the widely used InfoNCE loss, to provide independent loss contributions from different prototypes;
 
+## Demo
+Tip: Turn on the sound when watching the demo.
+
+https://github.com/user-attachments/assets/a23c3713-88b9-4603-9929-16a184c2c292
+
+https://github.com/user-attachments/assets/cce21d30-7214-4277-8142-64a90debe33b
+
+https://github.com/user-attachments/assets/f2904264-59ef-4b1a-9034-a9ae3a9d386e
+
+https://github.com/user-attachments/assets/d9f5892f-2b64-4be8-b90d-20f22a692fc5
+
+https://github.com/user-attachments/assets/ca9d2c20-8012-4950-a947-5ea773680a30
+
+
 ## Citation
 ```
 @misc{cai2024prototypebasedmaskedaudio,
