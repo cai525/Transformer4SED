@@ -4,7 +4,7 @@ import torch.nn as nn
 from src.models.sed_model import SEDModel
 from src.models.atst.atst_model import ATST
 from src.models.atst.atst_feature_extraction import AtstFeatureExtractor
-from src.models.passt.tool_block import GAP
+from src.models.pooling import MeanPooling
 from src.models.transformer_decoder import TransformerDecoder, TransformerXLDecoder, ConformerDecoder
 from src.models.transformer.mask import MlmModule
 
@@ -79,7 +79,7 @@ class AtstSED(SEDModel):
         self.at_adpater = at_adapter
         if self.at_adpater:
             self.at_feature_layer = at_feature_layer
-            self.at_adpater = nn.Sequential(nn.LayerNorm(768), GAP(), nn.Linear(768, class_num))
+            self.at_adpater = nn.Sequential(nn.LayerNorm(768), MeanPooling(), nn.Linear(768, class_num))
 
     def init_atst(self, path=None, atst_dropout=0):
         if path is None:
