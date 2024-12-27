@@ -4,7 +4,7 @@ import torch.nn as nn
 from src.models.sed_model import SEDModel
 from src.models.atst.atst_model import ATST
 from src.models.atst.atst_feature_extraction import AtstFeatureExtractor
-from src.models.pooling import MeanPooling
+from src.models.passt.tool_block import GAP
 from src.models.transformer_decoder import TransformerDecoder, TransformerXLDecoder, ConformerDecoder
 from src.models.transformer.mask import MlmModule
 
@@ -79,7 +79,7 @@ class AtstSED(SEDModel):
         self.at_adpater = at_adapter
         if self.at_adpater:
             self.at_feature_layer = at_feature_layer
-            self.at_adpater = nn.Sequential(nn.LayerNorm(768), MeanPooling(), nn.Linear(768, class_num))
+            self.at_adpater = nn.Sequential(nn.LayerNorm(768), GAP(), nn.Linear(768, class_num))
 
     def init_atst(self, path=None, atst_dropout=0):
         if path is None:
@@ -128,7 +128,8 @@ class AtstSED(SEDModel):
     def encoder_step(self, input, encoder_win, mix_rate, win_param):
         org_input = input  # input shape: [B, F=64, 1001]
         atst_out_dict = self.atst_frame(input,
-                                        n=self.get_encoder_depth() + 1 - min(self.feature_layer, self.at_feature_layer))
+                                        n=self.get_backbone_encoder_depth() + 1 -
+                                        min(self.feature_layer, self.at_feature_layer))
         x = atst_out_dict["feature_map_{layer}".format(layer=self.feature_layer)]
         # x.shape = [batch, time, channel]
         assert x.shape[-1] == self.embed_dim
@@ -143,6 +144,7 @@ class AtstSED(SEDModel):
             x_local = self.slide_window_layer(slide_window_model(org_input, emb_len=x.shape[1]))
             x = mix_rate * x_local + (1 - mix_rate) * x
         return x, atst_out_dict
+
     def decoder_step(self, x, other_dict):
         # mask language model
         if self.mlm:
@@ -193,25 +195,23 @@ class AtstSED(SEDModel):
             at_adapter_logit = self.at_adpater(at_embedding)
             #print(at_adapter_embedding.shape)
             at_adapter_out = torch.sigmoid(at_adapter_logit)
-            other_dict['at_out_specific'] = at_adapter_out
+            other_dict['at_out'] = at_adapter_out
 
         return sed_out.transpose(1, 2), at_out, other_dict
 
     def get_feature_extractor(self):
         return self.mel_trans
 
-    def get_encoder(self):
+    def get_backbone_encoder(self):
         return self.atst_frame
 
     def get_model_name(self):
         return "ATST_SED"
 
-    def get_encoder_output_dim(self):
-        return self.embed_dim
-
     def get_encoder_depth(self):
         if not hasattr(self, "_encoder_depth"):
             self._encoder_depth = len(self.atst_frame.atst.blocks)
         return self._encoder_depth
-    def get_decode_ratio(self):
+
+    def get_backbone_upsample_ratio(self):
         return self.decode_interpolate_ratio

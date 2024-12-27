@@ -11,7 +11,9 @@ class AtstWithSlide(EncoderSlideWindow):
 
     def encode(self, input: torch.Tensor) -> torch.Tensor:
         assert isinstance(self.net, AtstSED)
-        atst_out_dict = self.net.get_encoder()(input, n=self.net.get_encoder_depth() + 1 - min(self.net.feature_layer, self.net.at_feature_layer))
+        atst_out_dict = self.net.get_backbone_encoder()(input,
+                                                        n=self.net.get_backbone_encoder_depth() + 1 -
+                                                        min(self.net.feature_layer, self.net.at_feature_layer))
         x = atst_out_dict["feature_map_{layer}".format(layer=self.net.feature_layer)]
         # x.shape = (B, T, C)
         assert x.shape[-1] == self.net.embed_dim

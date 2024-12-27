@@ -44,6 +44,6 @@ if __name__ == "__main__":
                 # Replace source directory with destination in the path
                 des_file_path = os.path.join(des_dir, subdir_name, file)
                 # Ensure the destination directory exists
-                ensure_dir(des_file_path)
+                # ensure_dir(des_file_path)
                 # Resample and save the audio file
                 resample_audio(src_file_path, des_file_path, target_sr)

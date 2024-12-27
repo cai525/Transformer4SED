@@ -18,7 +18,7 @@ import wget
 from timm.models.vision_transformer import Block
 from timm.models.layers import to_2tuple, trunc_normal_
 # override the timm package to relax the input shape constraint.
-from src.models.pos_embed import get_1d_sincos_pos_embed_from_grid
+from src.models.transformer.pos_embed import get_1d_sincos_pos_embed_from_grid
 
 
 @torch.no_grad()

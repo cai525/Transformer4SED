@@ -21,20 +21,26 @@ class StronglyLabeledDataset(Dataset):
         self.pad_to = encoder.audio_len * encoder.sr
         self.return_name = return_name
 
-        #construct clip dictionary with filename = {path, events} where events = {label, onset and offset}
+        #construct clip dictionary with filename: {path, events} where events = {label, onset and offset}
         clips = {}
 
-        tk = tqdm(tsv_read.iterrows(), total=len(tsv_read), leave=False, desc="strong dataset")
-        for _, row in tk:
-            if row["filename"] not in clips.keys():
-                clips[row["filename"]] = {"path": os.path.join(dataset_dir, row["filename"]), "events": []}
+        # group by filenames
+        grouped = tsv_read.groupby("filename")
 
-            if not np.isnan(row["onset"]):
-                clips[row["filename"]]["events"].append({
-                    "event_label": row["event_label"],
-                    "onset": row["onset"],
-                    "offset": row["offset"]
-                })
+        for filename, group in tqdm(grouped, total=len(grouped), leave=False, desc="strong dataset"):
+            clips[filename] = {
+                "path":
+                os.path.join(dataset_dir, filename),
+                "events":
+                group.apply(
+                    lambda row: {
+                        "event_label": row["event_label"],
+                        "onset": row["onset"],
+                        "offset": row["offset"],
+                    },
+                    axis=1,
+                ).tolist()
+            }
 
         self.clips = clips  #dictionary for each clip
         self.clip_list = list(clips.keys())  # list of all clip names

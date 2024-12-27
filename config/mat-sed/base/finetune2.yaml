@@ -1,3 +1,7 @@
+include:
+  base_path: ./config/mat-sed/base/finetune1.yaml
+  keys: [feature, dataset, synth_dataset, class_loss]
+
 generals:
   warn: False                          # show warnings
   savepsds: True                       # save psds data
@@ -35,34 +39,16 @@ training:
   # post-processing
   median_window: [ 5,20, 5, 5, 5,20,20,20, 5,20]
   filter_type: median
-  decode_weak_valid: 0                 # weak prediction masking on strong prediction,
-  decode_weak_test: 1                  # 0: no weak prediction used, 1: weak prediction masking, 2: weak SED
-  val_thresholds: [0.5]                # thresholds used to compute f1 intersection in validation.
-  n_test_thresholds: 50                # number of thresholds used to compute psds in test
+  weak_mask: True
   #data augmentations
   transform:                           # hyperparameters for data augmentations that do not alter the label information.
     n_transform: 2                     # 0: no augmentation below is applied. 1: same augmentation below is applied on student/teacher model input. 2: different augmentations below is applied on student/teacher model input.
-    choice: [ 1, 0, 0, 1]                # apply the chosen data augmentations: [ FilterAugment, freq_mask, add_noise, frequency disortion]
-    filter_db_range: [-12, 12]       # db range of FilterAugment to be applied on each band
+    choice: [ 1, 0, 0, 1]              # apply the chosen data augmentations: [ FilterAugment, freq_mask, add_noise, frequency disortion]
+    # arguments of FilterAugument
+    filter_db_range: [-26, 26]         # db range of FilterAugment to be applied on each band
     filter_bands: [ 2, 5 ]             # range of frequency band number in FilterAugment
     filter_minimum_bandwidth: 4
     filter_type: step
-    freq_mask_ratio: 16                # maximum ratio of freuqnecy masking range. max 1/16 of total frequnecy number will be masked
-    noise_snrs: [ 35, 40 ]             # snr of original signal wrpt the noise added.
-
-
-feature:                               
-  pred_len: 1000
-  n_mels: 128
-  n_fft: 1024
-  hopsize: 320
-  win_length: 800
-  fmin: 0.0
-  fmax: None
-  audio_max_len: 10
-  sr: 32000
-  net_subsample: 1
-
 
 PaSST_SED:
   init_kwargs:
@@ -70,7 +56,6 @@ PaSST_SED:
     f_pool: "mean_pool"             # frequency-wise information pooling type
     decode_ratio: 10                     # decode ratio in local gru decoder
     at_adapter: True
-    passt_at_feature_layer: "frame_mean"
     decoder: "transformerXL"
     decoder_layer_num: 3
     decoder_pos_emd_len: 1000
@@ -99,39 +84,6 @@ PaSST_SED:
     mix_rate: 0.5 
     # temperature parameters
     temp_w: 0.5
-
-dataset:                               # change with your paths if different.
-  # NOTE: if you have data in 44kHz only then synth_folder will be the path where
-  # resampled data will be placed.
-    weak_folder: /home/cpf/data/dcase/audio/train/weak/weak_32k
-    weak_tsv: meta/train/weak.tsv
-    unlabeled_folder: /home/cpf/data/dcase/audio/train/unlabel/unlabel_in_domain_32k
-
-    strong_folder: /home/cpf/data/dcase/audio/train/strong/strong_32k/
-    strong_tsv: meta/train/audioset_strong.tsv
-
-    val_folder: /home/cpf/data/dcase/audio/validation/validation_32k/
-    val_tsv: meta/validation/validation.tsv
-    val_dur: meta/validation/validation_durations.tsv
-
-    test_folder: /home/cpf/data/dcase/audio/validation/validation_32k/
-    test_tsv: meta/validation/validation.tsv
-    test_dur: meta/validation/validation_durations.tsv
-
-    pubeval_folder: /home/cpf/data/dcase/audio/public/public_32k/
-    pubeval_tsv: meta/validation/ground_truth_public.tsv
-    pubeval_dur: meta/validation/public_durations.tsv
-synth_dataset:                         # change with your paths if different.
-    synth_train_folder: /home/cpf/data/dcase/audio/train/syn/soundscapes_32k
-    synth_train_tsv: meta/train/synthetic21_train/soundscapes.tsv
-    synth_train_dur: None
-    synth_val_folder: /home/cpf/data/dcase/audio/validation/validation_32k/soundscapes_32k
-    synth_val_tsv: meta/validation/synthetic21_validation/soundscapes.tsv
-    synth_val_dur: meta/validation/synthetic21_validation/durations.tsv
-
-class_loss:
-  loss_name: BCELoss
-  kwargs: 
 
 opt:
     param_groups: 

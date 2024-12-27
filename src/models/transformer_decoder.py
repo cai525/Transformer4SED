@@ -11,42 +11,27 @@ from src.models.transformer.transformerxl_token import TransformerXLWithClsToken
 from src.models.transformer.mask import diagonal_mask
 
 
-class TransformerDecoderConfig:
-
-    def __init__(self) -> None:
-        self.attn_drop = 0  # The dropout rate in Multi-Head Self-Attention
-        self.out_norm = True  # If normolizaiotn is need in
-        self.num_heads = 12
-        self.mlp_ratio = 1
-
-
-class ConformerDecoderConfig:
-
-    def __init__(self) -> None:
-        self.attn_drop = 0  # The dropout rate in Multi-Head Self-Attention
-        self.out_norm = True  # If normolizaiotn is need in
-        self.num_heads = 12
-        self.mlp_ratio = 1
-        self.kenrel_size = 31
-        self.dilation=1
-
-
 class TransformerDecoder(nn.Module):
 
-    def __init__(self, input_dim, decoder_layer_num=2, pos_embed_strategy="learnable", seq_len=1000) -> None:
+    def __init__(
+        self,
+        input_dim,
+        decoder_layer_num=2,
+        pos_embed_strategy="learnable",
+        seq_len=1000,
+        attn_drop=0,
+        num_heads=12,
+        mlp_ratio=1,
+    ) -> None:
         super(TransformerDecoder, self).__init__()
 
         self.input_dim = input_dim
-        self.config = TransformerDecoderConfig()
 
         # self.projector = nn.Sequential(nn.Linear(input_dim, input_dim), nn.LayerNorm(input_dim))
 
         self.blocks = nn.ModuleList([
-            Block(input_dim,
-                  num_heads=self.config.num_heads,
-                  mlp_ratio=self.config.mlp_ratio,
-                  norm_layer=nn.LayerNorm,
-                  attn_drop=self.config.attn_drop) for i in range(decoder_layer_num)
+            Block(input_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, norm_layer=nn.LayerNorm, attn_drop=attn_drop)
+            for i in range(decoder_layer_num)
         ])
 
         self.pos_embed_strategy = pos_embed_strategy
@@ -88,22 +73,30 @@ class TransformerDecoder(nn.Module):
 
 class TransformerXLDecoder(nn.Module):
 
-    def __init__(self, input_dim, seq_len=1000, window_len=None, decoder_layer_num=2) -> None:
+    def __init__(
+        self,
+        input_dim,
+        seq_len=1000,
+        window_len=None,
+        decoder_layer_num=2,
+        attn_drop=0,
+        num_heads=12,
+        mlp_ratio=1,
+    ) -> None:
         super(TransformerXLDecoder, self).__init__()
-        self.config = TransformerDecoderConfig()
         self.pos_embedding = RelPositionalEncoding(d_model=input_dim, dropout_rate=0, max_len=seq_len)
         self.encoder_blocks = nn.ModuleList([
             TransformerXL(input_dim,
-                          num_heads=self.config.num_heads,
-                          mlp_ratio=self.config.mlp_ratio,
+                          num_heads=num_heads,
+                          mlp_ratio=mlp_ratio,
                           norm_layer=nn.LayerNorm,
-                          attn_drop=self.config.attn_drop) for i in range(decoder_layer_num)
+                          attn_drop=attn_drop) for i in range(decoder_layer_num)
         ])
 
         if isinstance(window_len, int):
             att_mask = diagonal_mask(seq_len=seq_len, mask_width=window_len)
         elif isinstance(window_len, Sequence):
-            assert len(window_len) == self.config.num_heads
+            assert len(window_len) == num_heads
             att_mask = []
             for width in window_len:
                 att_mask.append(diagonal_mask(seq_len=seq_len, mask_width=width))
@@ -131,16 +124,29 @@ class TransformerXLDecoder(nn.Module):
 
 class ConformerDecoder(nn.Module):
 
-    def __init__(self, input_dim, seq_len=1000, window_len=None, decoder_layer_num=2) -> None:
+    def __init__(
+        self,
+        input_dim,
+        seq_len=1000,
+        window_len=None,
+        decoder_layer_num=2,
+        attn_drop=0,
+        num_heads=12,
+        mlp_ratio=1,
+        kenrel_size=31,
+        dilation=1,
+    ) -> None:
         super().__init__()
-        self.config = ConformerDecoderConfig()
         self.pos_embedding = RelPositionalEncoding(d_model=input_dim, dropout_rate=0, max_len=seq_len)
         self.blocks = nn.ModuleList([
-            ConformerEncoderLayer(input_dim,
-                                  self.config.num_heads,
-                                  dim_feedforward=int(input_dim * self.config.mlp_ratio),
-                                  cnn_module_kernel=self.config.kenrel_size,
-                                  dilation=self.config.dilation) for i in range(decoder_layer_num)
+            ConformerEncoderLayer(
+                input_dim,
+                num_heads,
+                dim_feedforward=int(input_dim * mlp_ratio),
+                cnn_module_kernel=kenrel_size,
+                dilation=dilation,
+                attn_drop=attn_drop,
+            ) for i in range(decoder_layer_num)
         ])
 
         att_mask = diagonal_mask(seq_len=seq_len, mask_width=window_len) if window_len is not None else None
@@ -154,32 +160,6 @@ class ConformerDecoder(nn.Module):
 
         for block in self.blocks:
             x = block(src=x, pos_emb=pos_emb, src_mask=self.att_mask)  #  # (T, N, C)
-
-        x = x.permute(1, 0, 2)  # (T, N, C) ->(N, T, C)
-        return x
-    
-    
-class TransformerCLSDecoder(nn.Module):
-
-    def __init__(self, input_dim, seq_len=1000, decoder_layer_num=2, cls_num=10) -> None:
-        super(TransformerCLSDecoder, self).__init__()
-        self.config = TransformerDecoderConfig()
-        self.pos_embedding = RelPositionalEncoding(d_model=input_dim, dropout_rate=0, max_len=seq_len)
-        self.encoder_blocks = nn.ModuleList([
-            TransformerXLWithClsToken(input_dim,
-                          num_heads=self.config.num_heads,
-                          cls_num=cls_num,
-                          mlp_ratio=self.config.mlp_ratio,
-                          norm_layer=nn.LayerNorm,
-                          attn_drop=self.config.attn_drop) for i in range(decoder_layer_num)
-        ])
-
-    def forward(self, x):
-        x, pos_emb = self.pos_embedding(x)
-        B = x.shape[0]
-        x = x.permute(1, 0, 2)  # (N, T, C) -> (T, N, C)
-        for block in self.encoder_blocks:
-            x = block(x, pos_emb)  #  # (T, N, C)
 
         x = x.permute(1, 0, 2)  # (T, N, C) ->(N, T, C)
         return x

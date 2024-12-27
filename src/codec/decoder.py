@@ -8,39 +8,22 @@ import pandas as pd
 import torch
 from scipy import ndimage
 
-from src.postprocess.filter import MyMedianfilterfunc
+from src.postprocess.filter import median_filter_torch
 from sed_scores_eval.base_modules.scores import create_score_dataframe, validate_score_dataframe
-""""
-decode_pred_batch_fast vs batched_decode_preds
-    decode_pred_batch_fast: 生成离散的，二值化的预测值；
-    batched_decode_preds: 生成连续的预测；
-"""
 
 
-def decode_pred_batch_fast(outputs,
-                           weak_preds,
-                           filenames,
-                           encoder,
-                           thresholds,
-                           median_filter,
-                           decode_weak):
+def decode_pred_batch_fast(outputs, weak_preds, filenames, encoder, thresholds, median_filter):
     pred_dfs = {}
     for threshold in thresholds:
         pred_dfs[threshold] = pd.DataFrame()
 
     for c_th in thresholds:
         output = copy.deepcopy(outputs.transpose(1, 2).detach())  #output size = [batch,frames, n_class]
-
-        if decode_weak:  # if decode_weak = 1 or 2
-            weak_pred_negtive_index = torch.where(weak_preds < c_th)
-            output[weak_pred_negtive_index[0], :, weak_pred_negtive_index[1]] = 0
-            if decode_weak > 1:  # use only weak predictions (weakSED)
-                weak_pred_positive_index = torch.where(weak_preds > c_th)
-                output[weak_pred_positive_index[0], :, weak_pred_positive_index] = 1
-        if decode_weak < 2:  # weak prediction masking
-            output = MyMedianfilterfunc(output, median_filter)
-            output = (output > c_th).float()
-            #output.shape B,T,C
+        weak_pred_negtive_index = torch.where(weak_preds < c_th)
+        output[weak_pred_negtive_index[0], :, weak_pred_negtive_index[1]] = 0
+        output = median_filter_torch(output, median_filter)
+        output = (output > c_th).float()
+        #output.shape B,T,C
         output = output.cpu().numpy()
         for batch_idx in range(output.shape[0]):
             output_one = output[batch_idx]

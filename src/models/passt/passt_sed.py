@@ -3,9 +3,9 @@ import torch.nn as nn
 from timm.models.vision_transformer import Block
 
 from src.models.sed_model import SEDModel
-from src.models.pooling import (MeanPooling, FrequencyWiseTranformerPooling)
-from src.models.passt.passt import PaSST
+from src.models.pooling import FrequencyWiseTranformerPooling, AttentionPooling
 from src.models.passt.passt_feature_extraction import PasstFeatureExtractor
+from src.models.passt.tool_block import GAP
 from src.models.transformer_decoder import TransformerDecoder, TransformerXLDecoder, ConformerDecoder
 from src.models.transformer.mask import MlmModule
 
@@ -36,42 +36,42 @@ class InterpolateModule(nn.Module):
 
 class PaSST_SED(SEDModel):
 
-    def __init__(
-            self,
-            decode_ratio=10,
-            interpolate_mode='linear',
-            passt_feature_layer=10,
-            embed_dim=768,
-            decoder_dim=768,
-            f_pool='mean_pool',
-            s_patchout_f=0,
-            s_patchout_t=0,
-            decoder='gru',
-            decoder_layer_num=2,
-            decoder_pos_emd_len=1000,
-            load_pretrained_model=True,
-            class_num=10,
-            at_adapter=False,
-            passt_at_feature_layer="frame_mean",
-            decoder_win_len=None,
-            mlm=False,
-            mlm_dict=dict(),
-    ):
+    def __init__(self,
+                 decode_ratio=10,
+                 interpolate_mode='linear',
+                 passt_feature_layer=10,
+                 embed_dim=768,
+                 decoder_dim=768,
+                 f_pool='mean_pool',
+                 s_patchout_f=0,
+                 s_patchout_t=0,
+                 decoder='gru',
+                 decoder_layer_num=2,
+                 decoder_pos_emd_len=1000,
+                 load_pretrained_model=True,
+                 class_num=10,
+                 at_adapter=False,
+                 decoder_win_len=None,
+                 mlm=False,
+                 mlm_dict=dict(),
+                 lora_config=None):
 
         super().__init__()
         # block = getattr(BLOCK, block_name)
         #setting mel feature extrator
-        self.mel_trans = PasstFeatureExtractor(n_mels=128,
-                                               sr=32000,
-                                               win_length=800,
-                                               hopsize=320,
-                                               n_fft=1024,
-                                               htk=False,
-                                               fmin=0.0,
-                                               fmax=None,
-                                               norm=1,
-                                               fmin_aug_range=10,
-                                               fmax_aug_range=2000)
+        self.mel_trans = PasstFeatureExtractor(
+            n_mels=128,
+            sr=32000,
+            win_length=800,
+            hopsize=320,
+            n_fft=1024,
+            htk=False,
+            fmin=0.0,
+            fmax=None,
+            wav_norm=True,
+            fmin_aug_range=10,
+            fmax_aug_range=2000,
+        )
 
         #passt
         assert s_patchout_t == 0, "SED task do not support temporal patchout"
@@ -99,6 +99,11 @@ class PaSST_SED(SEDModel):
             "act_layer": None,
             "weight_init": '',
         }
+        if lora_config != None:
+            passt_params_dict["lora_config"] = lora_config
+            from src.models.passt.passt_lora import PaSST
+        else:
+            from src.models.passt.passt import PaSST
 
         if load_pretrained_model:
 
@@ -133,14 +138,18 @@ class PaSST_SED(SEDModel):
 
         self.at_adpater = at_adapter
         if self.at_adpater:
-            self.passt_at_feature_layer = passt_at_feature_layer
-            self.at_adpater = nn.Sequential(MeanPooling(), nn.Linear(768, class_num))
+            self.at_adpater = nn.Sequential(
+                AttentionPooling(embed_dim=embed_dim, num_head=12),
+                nn.Linear(embed_dim, class_num),
+            )
 
     def init_f_pool(self, pool_name, embed_dim):
         if pool_name == 'mean_pool':
             pass
         elif pool_name == 'frequency_wise_tranformer_encoder':
             self.f_pool_module = FrequencyWiseTranformerPooling(embed_dim)
+        elif pool_name == "attention":
+            self.f_pool_module = AttentionPooling(embed_dim=embed_dim, num_head=6)
         else:
             raise NotImplementedError("pool method {0} hasn't been implemneted yet".format(pool_name))
 
@@ -187,9 +196,6 @@ class PaSST_SED(SEDModel):
         self.mlm_mlp = nn.Sequential(torch.nn.Linear(self.decoder_dim, self.decoder_dim), torch.nn.GELU(),
                                      torch.nn.Linear(self.decoder_dim, out_dim))
 
-    def wav2mel(self, wavs: torch.Tensor) -> torch.Tensor:
-        return self.mel_trans(wavs)
-
     def f_pool(self, passt_out_dict):
         # get feature frome pretrained backbone: shape of passt_feature is (N,C,P)
         assert isinstance(self.passt_feature_layer, int)
@@ -230,7 +236,7 @@ class PaSST_SED(SEDModel):
     def at_forward(self, at_embedding, other_dict):
         at_adapter_logit = self.at_adpater(at_embedding)
         at_adapter_out = torch.sigmoid(at_adapter_logit)
-        other_dict['at_out_specific'] = at_adapter_out
+        other_dict['at_out'] = at_adapter_out
         return other_dict
 
     def forward(self,
@@ -252,6 +258,10 @@ class PaSST_SED(SEDModel):
         x = torch.cat((x, x[:, -1, :].unsqueeze(1)), dim=1)  # padding from 99 frames to 100 frames
         x = self.interpolate_module(x, self.decode_ratio)
         assert x.shape[1] == 1000
+        # another way of padding
+        # B, T, C = x.shape
+        # x = x.reshape(B, self.decode_ratio, T//self.decode_ratio, C)
+        # x = torch.cat((x, x[:,:, -1, :].unsqueeze(2)), dim=2).reshape(B, T+self.decode_ratio, C)
 
         if encoder_win:
             from src.models.passt.passt_win import PasstWithSlide
@@ -264,24 +274,15 @@ class PaSST_SED(SEDModel):
 
         #  Audio tagging branch
         if self.at_adpater:
-            if self.passt_at_feature_layer == "frame_mean":
-                at_embedding = passt_out_dict["frame"].transpose(1, 2)[:, 2:, :]  #B,P,C
-            elif self.passt_at_feature_layer == 'token_mean':
-                at_embedding = passt_out_dict["frame"].transpose(1, 2)[:, :2, :],
-            else:
-                at_embedding = passt_out_dict["layer{}_out".format(self.passt_at_feature_layer)].transpose(1, 2)[:,
-                                                                                                                 2:, :]
+            at_embedding = passt_out_dict["frame"].transpose(1, 2)[:, 2:, :]  #B,P,C
             other_dict = self.at_forward(at_embedding, other_dict)
 
         if self.mlm:
             x = self.mlm_mlp(x)
             return x, other_dict
-        embed_before_classifier = x
 
-        other_dict["sed_embed"] = embed_before_classifier
         # localization
         x = self.classifier(x)
-        other_dict["logit"] = x
 
         # other_dict['fbank'] = fbank
         sed_out = torch.sigmoid(x / temp_w)
@@ -291,22 +292,17 @@ class PaSST_SED(SEDModel):
         # linear-softmax pool
         out = (sed_out * sed_out).sum(dim=1) / sed_out.sum(dim=1)
         at_out = torch.clamp(out, 1e-7, 1.)
-        other_dict['sed_logit'] = other_dict["logit"].transpose(1, 2)
-        other_dict['at_logit'] = torch.logit(at_out)
 
         return sed_out.transpose(1, 2), at_out, other_dict
 
     def get_feature_extractor(self):
         return self.mel_trans
 
-    def get_encoder(self):
+    def get_backbone_encoder(self):
         return self.patch_transformer
 
     def get_model_name(self):
         return "PaSST_SED"
 
-    def get_encoder_output_dim(self):
-        return self.embed_dim
-
-    def get_decode_ratio(self):
+    def get_backbone_upsample_ratio(self):
         return self.decode_ratio

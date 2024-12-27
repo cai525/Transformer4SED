@@ -5,18 +5,20 @@ import torchaudio
 
 class PasstFeatureExtractor(nn.Module):
 
-    def __init__(self,
-                 n_mels=128,
-                 sr=32000,
-                 win_length=800,
-                 hopsize=320,
-                 n_fft=1024,
-                 htk=False,
-                 fmin=0.0,
-                 fmax=None,
-                 norm=1,
-                 fmin_aug_range=1,
-                 fmax_aug_range=1000):
+    def __init__(
+        self,
+        n_mels=128,
+        sr=32000,
+        win_length=800,
+        hopsize=320,
+        n_fft=1024,
+        htk=False,
+        fmin=0.0,
+        fmax=None,
+        wav_norm=True,
+        fmin_aug_range=1,
+        fmax_aug_range=1000,
+    ):
         torch.nn.Module.__init__(self)
         # adapted from: https://github.com/CPJKU/kagglebirds2020/commit/70f8308b39011b09d41eb0f4ace5aa7d2b0e806e
         # Similar config to the spectrograms used in AST: https://github.com/YuanGongND/ast
@@ -31,7 +33,7 @@ class PasstFeatureExtractor(nn.Module):
             fmax = sr // 2 - fmax_aug_range // 2
             # print(f"Warning: FMAX is None setting to {fmax} ")
         self.fmax = fmax
-        self.norm = norm
+        self.wav_norm = wav_norm
         self.hopsize = hopsize
         self.register_buffer('window', torch.hann_window(win_length, periodic=False), persistent=False)
         assert fmin_aug_range >= 1, f"fmin_aug_range={fmin_aug_range} should be >=1; 1 means no augmentation"
@@ -41,8 +43,16 @@ class PasstFeatureExtractor(nn.Module):
 
         self.register_buffer("preemphasis_coefficient", torch.as_tensor([[[-.97, 1]]]), persistent=False)
 
-    def forward(self, x):
+    def normalize_wav(self, wav):
+        max_vals = torch.max(wav, dim=1, keepdim=True)[0]
+        min_vals = torch.min(wav, dim=1, keepdim=True)[0]
+        max_abs_vals = torch.maximum(torch.abs(max_vals), torch.abs(min_vals))
+        normalized_wav = wav / (max_abs_vals + 1e-10)
+        return normalized_wav
 
+    def forward(self, x):
+        if self.wav_norm:
+            x = self.normalize_wav(x)
         x = nn.functional.conv1d(x.unsqueeze(1), self.preemphasis_coefficient).squeeze(1)
         x = torch.stft(x,
                        self.n_fft,
@@ -73,11 +83,12 @@ class PasstFeatureExtractor(nn.Module):
         with torch.cuda.amp.autocast(enabled=False):
             melspec = torch.matmul(mel_basis, x)
 
-        melspec = (melspec + 0.00001).log()
-
-        melspec = (melspec + 4.5) / 5.  # fast normalization
-
         return melspec
 
     def extra_repr(self):
         return 'winsize={}, hopsize={}'.format(self.win_length, self.hopsize)
+
+    def normalize(self, melspec):
+        melspec = (melspec + 0.00001).log()
+        melspec = (melspec + 4.5) / 5.  # fast normalization
+        return melspec

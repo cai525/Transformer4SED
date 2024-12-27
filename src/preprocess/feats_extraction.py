@@ -1,15 +1,14 @@
 import numpy as np
-import soundfile as sf
+import librosa
 import torch
 import torchaudio
 
 
 def waveform_modification(filepath, pad_to, encoder):
-    wav, _ = sf.read(filepath)
+    wav, _ = librosa.load(filepath, sr=encoder.sr)
     wav = to_mono(wav)
     wav, pad_mask = pad_wav(wav, pad_to, encoder)
     wav = torch.from_numpy(wav).float()
-    wav = normalize_wav(wav)
     return wav, pad_mask
 
 

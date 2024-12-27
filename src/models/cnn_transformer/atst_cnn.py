@@ -14,7 +14,7 @@ class AtstWithSlide(EncoderSlideWindow):
         super().__init__(net, win_param)
 
     def encode(self, input: torch.Tensor) -> torch.Tensor:
-        atst_out_dict = self.net.get_encoder()(input)
+        atst_out_dict = self.net.get_backbone_encoder()(input)
         x = atst_out_dict["feature_map_{layer}".format(layer=12)]
         return x
 
@@ -151,7 +151,7 @@ class CRNN(SEDModel):
         x = self.rnn(x)
         x = self.dropout(x)
         strong = self.dense(x)  # [bs, frames, nclass]
-        strong = self.sigmoid(strong/temp_w)
+        strong = self.sigmoid(strong / temp_w)
         sof = self.dense_softmax(x)  # [bs, frames, nclass]
         sof = self.softmax(sof)
         sof = torch.clamp(sof, min=1e-7, max=1)
@@ -165,16 +165,13 @@ class CRNN(SEDModel):
         super(CRNN, self).train(mode)
 
     def get_feature_extractor(self):
-        return {"atst":self.atst_mel_trans, "cnn":self.cnn_mel_trans}
+        return {"atst": self.atst_mel_trans, "cnn": self.cnn_mel_trans}
 
-    def get_encoder(self):
+    def get_backbone_encoder(self):
         return self.atst_frame
 
     def get_model_name(self):
         return "ATST_CNN"
 
-    def get_encoder_output_dim(self):
-        return self.embedding_size
-
-    def get_decode_ratio(self):
+    def get_backbone_upsample_ratio(self):
         return 1

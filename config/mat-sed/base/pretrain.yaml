@@ -18,13 +18,12 @@ training:
   #data augmentations
   transform:                           # hyperparameters for data augmentations that do not alter the label information.
     n_transform: 1                     # 0: no augmentation below is applied. 1: same augmentation below is applied on student/teacher model input. 2: different augmentations below is applied on student/teacher model input.
-    choice: [ 1, 0, 0, 1]                # apply the chosen data augmentations: [ FilterAugment, freq_mask, add_noise, frequency disortion]
-    filter_db_range: [-12, 12]       # db range of FilterAugment to be applied on each band
+    choice: [ 1, 0, 0, 1]              # apply the chosen data augmentations: [ FilterAugment, freq_mask, add_noise, frequency disortion]
+    # arguments of FilterAugument
+    filter_db_range: [-26, 26]         # db range of FilterAugment to be applied on each band
     filter_bands: [ 2, 5 ]             # range of frequency band number in FilterAugment
     filter_minimum_bandwidth: 4
     filter_type: step
-    freq_mask_ratio: 10                # maximum ratio of freuqnecy masking range. max 1/16 of total frequnecy number will be masked
-    noise_snrs: [ 35, 40 ]             # snr of original signal wrpt the noise added.
  
 feature:                               
   pred_len: 1000
@@ -44,7 +43,6 @@ PaSST_SED:
   f_pool: "mean_pool"             # frequency-wise information pooling type
   decode_ratio: 10                     # decode ratio in local gru decoder
   at_adapter: True
-  passt_at_feature_layer: "frame_mean"
   decoder: "transformerXL"
   decoder_layer_num: 3
   decoder_pos_emd_len: 1000

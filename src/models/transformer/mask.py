@@ -1,8 +1,6 @@
 from typing import Sequence
 
-import random
 import matplotlib.pyplot as plt
-import numpy as np
 import torch
 from torch import Tensor
 
@@ -103,7 +101,7 @@ class MlmModule:
         num_seg = seq_len // block_width
         noise = torch.rand(batch_len, num_seg, device=self.device)
         noise_sort, _ = noise.sort()
-        threshold = noise_sort[:, int(num_seg*self.mask_rate)]
+        threshold = noise_sort[:, min(int(num_seg*self.mask_rate), num_seg - 1)]
         id_seq = torch.zeros(batch_len, seq_len, dtype=bool, device=self.device)
         id_seq[:, :num_seg*block_width] = (noise <= torch.unsqueeze(threshold, dim=-1)).repeat_interleave(block_width, dim=1)
         return id_seq

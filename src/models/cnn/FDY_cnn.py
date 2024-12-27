@@ -124,7 +124,7 @@ class FDY_CNN(nn.Module):
                  kernel=[3, 3, 3],
                  pad=[1, 1, 1],
                  stride=[1, 1, 1],
-                 n_filt=[64, 64, 64],
+                 nb_filters=[64, 64, 64],
                  pooling=[(1, 4), (1, 4), (1, 4)],
                  normalization="batch",
                  n_basis_kernels=4,
@@ -132,14 +132,14 @@ class FDY_CNN(nn.Module):
                  temperature=31,
                  pool_dim='freq'):
         super(FDY_CNN, self).__init__()
-        self.n_filt = n_filt
-        self.n_filt_last = n_filt[-1]
+        self.n_filt = nb_filters
+        self.n_filt_last = nb_filters[-1]
         cnn = nn.Sequential()
 
         def conv(i, normalization="batch", dropout=None, activ='relu'):
             """ Built CNN net """
-            in_dim = n_input_ch if i == 0 else n_filt[i - 1]
-            out_dim = n_filt[i]
+            in_dim = n_input_ch if i == 0 else nb_filters[i - 1]
+            out_dim = nb_filters[i]
             if DY_layers[i] == 1:
                 # use dynamic convolution
                 cnn.add_module("conv{0}".format(i), Dynamic_conv2d(in_dim, out_dim, kernel[i], stride[i], pad[i],
@@ -167,7 +167,7 @@ class FDY_CNN(nn.Module):
             if dropout is not None:
                 cnn.add_module("dropout{0}".format(i), nn.Dropout(dropout))
 
-        for i in range(len(n_filt)):
+        for i in range(len(nb_filters)):
             conv(i, normalization=normalization, dropout=conv_dropout, activ=activation)
             cnn.add_module("pooling{0}".format(i), nn.AvgPool2d(pooling[i]))
         self.cnn = cnn

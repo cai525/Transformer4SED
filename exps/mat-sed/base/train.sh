@@ -12,12 +12,12 @@ dir3="${save_folder}/finetune2"
 source $root_path/scripts/mem_check.sh 10000
 
 # pretrain
-cd $root_path/recipes/mlm/mlm_passt
+cd $root_path/recipes/desed/mlm/mlm_passt
 mkdir $dir1
 python main.py --multigpu=True --random_seed=True --config_dir="${config_folder}/pretrain.yaml" --save_folder=$dir1
 sleep 60
 
-cd $root_path/recipes/finetune/passt
+cd $root_path/recipes/desed/finetune/passt
 
 # finetune1
 source $root_path/scripts/mem_check.sh 10000

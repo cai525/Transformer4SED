@@ -4,20 +4,6 @@ import torch
 import torch.nn as nn
 
 
-class FeatureExtractor(nn.Module, ABC):
-
-    def __init__(self) -> None:
-        super().__init__()
-
-    @abstractmethod
-    def wav2mel(self, wavs: torch.Tensor) -> torch.Tensor:
-        pass
-
-    @abstractmethod
-    def normolize(self, mels: torch.Tensor) -> torch.Tensor:
-        pass
-
-
 class SEDModel(nn.Module, ABC):
 
     def __init__(self) -> None:
@@ -25,11 +11,11 @@ class SEDModel(nn.Module, ABC):
         pass
 
     @abstractmethod
-    def get_feature_extractor(self) -> FeatureExtractor:
+    def get_feature_extractor(self):
         pass
 
     @abstractmethod
-    def get_encoder(self):
+    def get_backbone_encoder(self):
         pass
 
     @abstractmethod
@@ -37,9 +23,5 @@ class SEDModel(nn.Module, ABC):
         pass
 
     @abstractmethod
-    def get_encoder_output_dim(self):
-        pass
-    
-    @abstractmethod
-    def get_decode_ratio(self):
+    def get_backbone_upsample_ratio(self):
         pass

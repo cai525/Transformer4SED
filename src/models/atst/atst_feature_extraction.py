@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from torchaudio.transforms import MelSpectrogram, AmplitudeToDB
 
-from src.models.sed_model import FeatureExtractor
 
 
 class MinMax():
@@ -42,7 +41,7 @@ class ATSTNorm(nn.Module):
         return spec
 
 
-class AtstFeatureExtractor(FeatureExtractor):
+class AtstFeatureExtractor(nn.Module):
 
     def __init__(self, n_mels=64, n_fft=1024, hopsize=160, win_length=1024, fmin=60, fmax=7800, sr=16000) -> None:
         super().__init__()

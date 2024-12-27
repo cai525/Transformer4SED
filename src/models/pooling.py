@@ -1,14 +1,10 @@
 import torch
 import torch.nn as nn
+
 from timm.models.vision_transformer import Block
 
 
 class FrequencyWiseTranformerPooling(nn.Module):
-    """
-        Ref: K. Li, Y. Song, L. -R. Dai, I. McLoughlin, X. Fang and L. Liu, 
-        "AST-SED: An Effective Sound Event Detection Method Based on Audio Spectrogram Transformer,
-        " ICASSP 2023 - 2023 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP),
-    """
 
     def __init__(self, embed_dim):
         super().__init__()
@@ -27,12 +23,73 @@ class FrequencyWiseTranformerPooling(nn.Module):
         return x
 
 
-class MeanPooling(nn.Module):
+class AttentionPooling(nn.Module):
 
-    def __init__(self):
-        super(MeanPooling, self).__init__()
-        pass
+    def __init__(self, embed_dim, num_head=4):
+        super().__init__()
+        self.f_att_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        torch.nn.init.normal_(self.f_att_token, std=.02)
+        self.frequency_att = nn.MultiheadAttention(embed_dim=embed_dim, num_heads=num_head, batch_first=True)
 
-    def forward(self, input):
-        #input shape, B,T,C
-        return torch.mean(input, dim=1)  #return B,C
+    def forward(self, x):
+        x, _ = self.frequency_att(
+            query=self.f_att_token.repeat(x.shape[0], 1, 1),
+            key=x,
+            value=x,
+        )
+        return x.squeeze(1)
+
+
+class ActivateAttention(nn.Module):
+
+    def __init__(self, dim, num_heads=6, qv_bias=False, attn_drop=0., proj_drop=0.):
+        super().__init__()
+        self.num_heads = num_heads
+        head_dim = dim // num_heads
+        self.scale = head_dim ** -0.5
+
+        self.f_q = nn.Linear(dim, dim, bias=qv_bias)
+        self.f_k = nn.Linear(dim, dim, bias=True)
+        self.f_v = nn.Linear(dim, dim, bias=qv_bias)
+        self.activate = nn.GELU()
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(dim, dim)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+    def forward(self, query, key, value):
+        assert query.shape[0] == key.shape[0] == value.shape[0]
+        B = query.shape[0]
+        assert query.shape[2] == key.shape[2] == value.shape[2]
+        C = query.shape[2]
+        N_q, N_k, N_v = query.shape[1], key.shape[1], value.shape[1]
+        assert N_k == N_v
+        
+        q = self.f_q(query).reshape(B, N_q, self.num_heads, C // self.num_heads).permute(0, 2, 1, 3)
+        k = self.f_k(key).reshape(B, N_k, self.num_heads, C // self.num_heads).permute(0, 2, 1, 3)
+        v = self.f_v(value).reshape(B, N_v, self.num_heads, C // self.num_heads).permute(0, 2, 1, 3)
+        
+        k = self.activate(k)
+        attn = (q @ k.transpose(-2, -1))* self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).transpose(1, 2).reshape(B, N_q, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+
+class ActivateAttentionPooling(nn.Module):
+    
+    def __init__(self, embed_dim, num_head=4):
+        super().__init__()
+        self.f_att_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        torch.nn.init.normal_(self.f_att_token, std=.02)
+        self.frequency_att = ActivateAttention(dim=embed_dim, num_heads=num_head)
+
+    def forward(self, x):
+        x = self.frequency_att(
+            query=self.f_att_token.repeat(x.shape[0], 1, 1),
+            key=x,
+            value=x,
+        )
+        return x

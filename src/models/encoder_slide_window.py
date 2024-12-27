@@ -7,10 +7,10 @@ from src.models.sed_model import SEDModel
 
 class EncoderSlideWindow(ABC):
 
-    def __init__(self, net: SEDModel, win_param=[512, 31]):
+    def __init__(self, net: SEDModel, win_param=[512, 31], out_dim=768):
         super().__init__()
         self.net = net
-        self.out_dim = self.net.get_encoder_output_dim()
+        self.out_dim = out_dim
         self.win = win_param
 
     def __call__(self, input: torch.Tensor, emb_len):

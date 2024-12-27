@@ -4,6 +4,9 @@ import torch
 import torch.nn as nn
 from torch.nn import BCELoss, MSELoss
 
+from src.functional.loss.sup_con_loss import SupConLoss
+from src.functional.loss.info_nce import InfoNCE
+
 
 def buildInstance(moduleName, className, **kwargs):
     inputModule = importlib.import_module(moduleName)
