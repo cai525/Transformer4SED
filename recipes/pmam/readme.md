@@ -1,7 +1,6 @@
 # PMAM
 [![PWC](https://img.shields.io/badge/arXiv-2409.17656-brightgreen)](https://arxiv.org/abs/2409.17656)
-Implementations of "[Prototype based Masked Audio Model for Self-Supervised Learning of Sound Event Detection](https://arxiv.org/abs/2409.17656)" (submitted to ICASSP2025).
-
+Implementations of "[Prototype based Masked Audio Model for Self-Supervised Learning of Sound Event Detection](https://arxiv.org/abs/2409.17656)" (accepted by to ICASSP2025). The code will be uploaded soon, before the date of ICASSP conference.
 
 ## Overview
 **P**rototype based **M**asked **A**udio **M**odel (PMAM) is a self-supervised representation learning algorithm designed for frame-level audio tasks like sound event detection, to better exploit unlabeled data. 
