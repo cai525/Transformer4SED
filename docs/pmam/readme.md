@@ -55,7 +55,7 @@ tar -zxvf tokenizer.gz
 
 5. Model training : self-supervised training + semi-supervised finetuning.
 ``` shell
-./train
+./train.sh
 ```
 
 ## Citation
