@@ -78,7 +78,7 @@ if __name__ == "__main__":
             if (not epoch % configs["generals"]["validation_interval"]) or (
                     epoch == configs['training']["scheduler"]["n_epochs"] - 1):
                 val_metrics = trainer.validation(epoch)
-                bestmodels.update(net, ema_net, epoch + 1, my_logger.logger, val_metrics)
+                bestmodels.update(trainer.net, trainer.ema_net, epoch + 1, my_logger.logger, val_metrics)
             if not epoch % 2:
                 bestmodels.save_bests(configs['training']["best_paths"])
 

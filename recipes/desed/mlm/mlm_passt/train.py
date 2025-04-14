@@ -22,9 +22,11 @@ class MLMTrainer(Trainer):
 
         for _, (wavs, _, _, _) in enumerate(tk0, 0):
             wavs = wavs.to(self.device)
-            # Data preprocessing
-            mel = self.net.get_feature_extractor()(wavs)
-
+            # Transform to mel respectively
+            extractor = self.net.get_feature_extractor()
+            mel = extractor(wavs)
+            # normalization
+            mel = extractor.normalize(mel)
             # time shift
             mel = frame_shift(mel)
             mel = feature_transformation(mel, log=True, norm_std=5.0, **self.config["training"]["transform"])
@@ -55,7 +57,11 @@ class MLMTrainer(Trainer):
             tk1 = tqdm(self.val_loader, total=n_valid, leave=False, desc="validation processing")
             for _, (wavs, _, _, _) in enumerate(tk1, 0):
                 wavs = wavs.to(self.device)
-                mel = self.net.get_feature_extractor()(wavs)
+                # Transform to mel respectively
+                extractor = self.net.get_feature_extractor()
+                mel = extractor(wavs)
+                # normalization
+                mel = extractor.normalize(mel)
                 pred, other_dict = self.net(mel, encoder_win=self.config["training"]["encoder_win"])
                 frame_before_mask = other_dict["frame_before_mask"]
                 mask_id_seq = other_dict["mask_id_seq"]

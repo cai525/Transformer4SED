@@ -4,6 +4,17 @@ import torch.nn as nn
 from timm.models.vision_transformer import Block
 
 
+class MeanPool(nn.Module):
+
+    def __init__(self):
+        super(MeanPool, self).__init__()
+        pass
+
+    def forward(self, input):
+        #input shape, B,T,C
+        return torch.mean(input, dim=1)  #return B,C
+
+
 class FrequencyWiseTranformerPooling(nn.Module):
 
     def __init__(self, embed_dim):
@@ -46,7 +57,7 @@ class ActivateAttention(nn.Module):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        self.scale = head_dim ** -0.5
+        self.scale = head_dim**-0.5
 
         self.f_q = nn.Linear(dim, dim, bias=qv_bias)
         self.f_k = nn.Linear(dim, dim, bias=True)
@@ -63,13 +74,13 @@ class ActivateAttention(nn.Module):
         C = query.shape[2]
         N_q, N_k, N_v = query.shape[1], key.shape[1], value.shape[1]
         assert N_k == N_v
-        
+
         q = self.f_q(query).reshape(B, N_q, self.num_heads, C // self.num_heads).permute(0, 2, 1, 3)
         k = self.f_k(key).reshape(B, N_k, self.num_heads, C // self.num_heads).permute(0, 2, 1, 3)
         v = self.f_v(value).reshape(B, N_v, self.num_heads, C // self.num_heads).permute(0, 2, 1, 3)
-        
+
         k = self.activate(k)
-        attn = (q @ k.transpose(-2, -1))* self.scale
+        attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
@@ -78,8 +89,9 @@ class ActivateAttention(nn.Module):
         x = self.proj_drop(x)
         return x
 
+
 class ActivateAttentionPooling(nn.Module):
-    
+
     def __init__(self, embed_dim, num_head=4):
         super().__init__()
         self.f_att_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
