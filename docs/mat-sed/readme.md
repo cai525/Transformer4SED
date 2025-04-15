@@ -15,6 +15,8 @@ MAT-SED (**M**asked **A**udio **T**ransformer for **S**ound **E**vent **D**etect
 <div align="center"><img src="./img/sliding-windows.png" width=60%></div>
 
 ## Running
+> ❗ Note: Through experiments, it has been found that the performance of the MAT-SED code trained using the current repository (psds1 around 0.57) is slightly lower than the results reported in the paper. This discrepancy may be due to the fact that the repository code was implemented specifically for PMAM, which has some impact on the MAT-SED recipe. We are currently investigating the issue and plan to update the repository code in the near future to ensure reproducibility. However, the implementation of the MAT-SED training strategy in this repository remains largely consistent with the original paper. We apologize for any inconvenience this may have caused.
+
 1. Install required libraries.
 ```shell
 pip install -r requirements.txt
