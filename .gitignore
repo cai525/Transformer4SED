@@ -9,3 +9,4 @@ __pycache__/
 psds_student/
 psds_teacher/
 pretrained_model/*
+run/

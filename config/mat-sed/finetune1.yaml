@@ -1,0 +1,123 @@
+generals:
+  warn: False                          # show warnings
+  savepsds: False                       # save psds data
+  test_on_public_eval: False           # change test dataset to DESED Reak public_eval (default dataset is DESED Real Validation)
+  load_from_existed_path: False         # Load model in existed path instead of creating a new one if true
+  finetune_mlm: True
+  test_only: False                     # perform test without training, for the model saved in save_folder
+  validation_interval: 1
+  log_level: INFO
+
+training:
+  batch_size: [3, 1, 4, 4]  # strong, synthetic, weak, unlabeled 
+  batch_size_val: 16
+  num_workers: 6
+  seed: 21
+  weak_split: 1                      # split the weak dataset so that "weak_split" of dataset is used to train and rest is used to validate
+  clip_grad: True
+  # =============================
+  n_epochs: 15                        #>> number of epochs to run
+  n_epochs_cut: 10                  #>> number of epochs used for exponential warmup
+  self_loss_warmup: 8
+  scheduler_name: ExponentialDown
+  cons_scheduler_name: Linear
+  lr_warmup_rate: 0.1
+  lr_warmup_epochs: 0
+  # =============================
+  val_thresholds: [0.5]                # thresholds used to compute f1 intersection in validation.
+  n_test_thresholds: 50                # number of thresholds used to compute psds in test
+  ema_factor: 0.999                    #>> ema factor for teacher model used in mean teacher model
+  w_weak: 0.5                          # weight for weak classification cost
+  w_cons_max: 2                       #>> max weight used for consistency loss
+  w_weak_cons: 0.5                       # max weight for weak classification cost
+  w_AT: 2
+  w_ict: 0
+  decode_weak_valid: 0                 # weak prediction masking on strong prediction,
+  decode_weak_test: 1                  # 0: no weak prediction used, 1: weak prediction masking, 2: weak SED
+  # Notice that the real length of median windows is aproximately 6 times than this(see setting.py for details).
+  median_window: [ 5,20, 5, 5, 5,20,20,20, 5,20]
+  #data augmentations
+  mixup_rate: 0.5                        # rate at which mixup is applied on the training data
+  transform:                           # hyperparameters for data augmentations that do not alter the label information.
+    n_transform: 2                     # 0: no augmentation below is applied. 1: same augmentation below is applied on student/teacher model input. 2: different augmentations below is applied on student/teacher model input.
+    choice: [ 1, 0, 0, 1]                # apply the chosen data augmentations: [ FilterAugment, freq_mask, add_noise ]
+    filter_db_range: [ -4.5, 6 ]       # db range of FilterAugment to be applied on each band
+    filter_bands: [ 2, 5 ]             # range of frequency band number in FilterAugment
+    filter_minimum_bandwidth: 4
+    filter_type: step
+    freq_mask_ratio: 16                # maximum ratio of freuqnecy masking range. max 1/16 of total frequnecy number will be masked
+    noise_snrs: [ 35, 40 ]             # snr of original signal wrpt the noise added.
+
+
+feature:                               
+  pred_len: 1000
+  n_mels: 128
+  n_fft: 1024
+  hopsize: 320
+  win_length: 800
+  fmin: 0.0
+  fmax: None
+  audio_max_len: 10
+  sr: 32000
+  net_subsample: 1
+
+
+PaSST_SED:
+  passt_feature_layer: 10                     # from which layer in AST to get patch embeddings
+  f_pool: "mean_pool"             # frequency-wise information pooling type
+  decode_ratio: 10                     # decode ratio in local gru decoder
+  specaug: 'F'
+  at_adapter: True
+  passt_at_feature_layer: "frame_mean"
+  decoder: "transformerXL"
+  decoder_layer_num: 3
+  mlm: False
+
+dataset:                               # change with your paths if different.
+    weak_folder: /home/cpf/data/dcase/audio/train/weak/weak_32k
+    weak_tsv: meta/desed/train/weak.tsv
+    unlabeled_folder: /home/cpf/data/dcase/audio/train/unlabel/unlabel_in_domain_32k
+
+    strong_folder: /home/cpf/data/dcase/audio/train/strong/strong_32k/
+    strong_tsv: meta/desed/train/strong.tsv
+
+    val_folder: /home/cpf/data/dcase/audio/validation/validation_32k/
+    val_tsv: meta/desed/validation/validation.tsv
+    val_dur: meta/desed/validation/validation_durations.tsv
+
+    test_folder: /home/cpf/data/dcase/audio/validation/validation_32k/
+    test_tsv: meta/desed/validation/validation.tsv
+    test_dur: meta/desed/validation/validation_durations.tsv
+
+    pubeval_folder: /home/cpf/data/dcase/audio/public/public_32k/
+    pubeval_tsv: meta/desed/validation/ground_truth_public.tsv
+    pubeval_dur: meta/desed/validation/public_durations.tsv
+synth_dataset:                         # change with your paths if different.
+    synth_train_folder: /home/cpf/data/dcase/audio/train/syn/soundscapes_32k
+    synth_train_tsv: meta/desed/train/synthetic21_train/soundscapes.tsv
+    synth_train_dur: None
+    synth_val_folder: /home/cpf/data/dcase/audio/validation/validation_32k/soundscapes_32k
+    synth_val_tsv: meta/desed/validation/synthetic21_validation/soundscapes.tsv
+    synth_val_dur: meta/desed/validation/synthetic21_validation/durations.tsv
+
+class_loss:
+  loss_name: BCELoss
+  kwargs: 
+
+opt:
+    encoder_win: False
+    exponent: -0.5
+    param_groups: 
+      passt:
+        lr: 0 
+        weight_decay: 1.0e-4
+        freeze_layer: 0
+        step_lr: 4
+      decoder: 
+        lr: 0 
+        weight_decay: 1.0e-4
+        step_lr: 0
+      head:
+        lr: 2.0e-4
+        weight_decay: 1.0e-4
+      
