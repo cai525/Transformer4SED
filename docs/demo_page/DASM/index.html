@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Detect Any Sound Model</title>
+  <!-- 引入自定义样式必须在 Bulma 后面 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/style.css">
+</head>
+
+<body>
+  <section class="section">
+    <div class="container">
+      <!-- 顶部标题 -->
+      <div class="has-text-centered">
+        <h2 class="title is-2" style="margin-bottom: 80px;">
+          Detect Any Sound: Open-Vocabulary Sound Event Detection with Multi-Modal Queries
+        </h2>
+      </div>
+      <!-- 模型介绍，左对齐 -->
+      <div class="has-text-left model-intro" style="margin-bottom: 30px;">
+        <h3 class="title is-3" style="margin-bottom: 20px">📝 Abstract</h3>
+        <hr style="margin-top: 0px; margin-bottom: 20px">
+        <p class="content">
+          Most existing sound event detection (SED) algorithms operate under a closed-set assumption, restricting their
+          detection capabilities to predefined classes. While recent efforts have explored language-driven zero-shot SED
+          by exploiting audio-language models, their performance is still far from satisfactory due to the lack of
+          fine-grained alignment and cross-modal feature fusion. In this work, we propose the Detect Any Sound Model
+          (DASM), a query-based framework for open-vocabulary SED guided by multi-modal queries. DASM formulates SED as
+          a frame-level retrieval task, where audio features are matched against query vectors derived from text or
+          audio prompts. To support this formulation, DASM introduces a dual-stream decoder that explicitly decouples
+          event recognition and temporal localization: a cross-modality event decoder performs query-feature fusion and
+          determines the presence of sound events at the clip-level, while a context network models temporal
+          dependencies for frame-level localization. Additionally, an inference-time attention masking strategy is
+          proposed to leverage semantic relations between base and novel classes, substantially enhancing generalization
+          to novel classes. Experiments on the AudioSet Strong dataset demonstrate that DASM effectively balances
+          localization accuracy with generalization to novel classes, outperforming CLAP-based methods in
+          open-vocabulary setting (+ 7.8 PSDS) and the baseline in the closed-set setting (+ 6.9 PSDS). Furthermore, in
+          cross-dataset zero-shot evaluation on DESED, DASM achieves a PSDS1 score of 42.2, even exceeding the
+          supervised CRNN baseline.
+        </p>
+      </div>
+      <div align="center"><img src="./data/main.png" width="70%"></div>
+
+      <!-- Features Section -->
+      <div class="container" style="margin-bottom: 30px; margin-top: 40px">
+        <h3 class="title is-3" style="margin-bottom: 10px">📋 Features</h3>
+        <hr style="margin-top: 0px; margin-bottom: 20px">
+        <ul>
+          <li>
+            <strong>Open-Vocabulary Event Detection</strong>: DASM supports detecting any sound event theoretically,
+            even
+            those not present in the
+            training set.
+          </li>
+          <li>
+            <strong>Dual-Modal Event Query</strong>
+            <ul>
+              <li>text query: natural language descriptions (e.g., "Sound of cats");</li>
+              <li>audio query: audio clips containing the target event. Several minutes of audio containing the queried
+                event is sufficient to produce a representative query vector.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Fine-Grained Detection:</strong> precise
+            temporal localization with the resolution up to 50 frames per second.
+          </li>
+        </ul>
+      </div>
+
+
+
+      <h3 class="title is-3" style="margin-bottom: 10px; margin-top: 80px">🔎 Demo</h3>
+      <hr />
+      <!-- Demo 展示表格 -->
+      <table class="table is-bordered is-striped demo-table">
+        <thead>
+          <tr>
+            <th style="width: 30%;">Prediction (Text Query💬)</th>
+            <th style="width: 30%;">Prediction (Audio Query🔊)</th>
+            <th style="width: 40%;">Ground Truth</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Demo 1 -->
+          <tr>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/Y3ptxRyVuU0w/Y3ptxRyVuU0w_text.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/Y3ptxRyVuU0w/Y3ptxRyVuU0w_audio.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <img src="./data/Y3ptxRyVuU0w/ground_truth_1.png" alt="Ground Truth Visualization" class="demo-img">
+            </td>
+          </tr>
+
+          <!-- Demo 2 -->
+          <tr>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/YxVchMQHrQLk/YxVchMQHrQLk_text.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/YxVchMQHrQLk/YxVchMQHrQLk_audio.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <img src="./data/YxVchMQHrQLk/ground_truth_2.png" alt="Ground Truth Visualization" class="demo-img">
+            </td>
+          </tr>
+          <!-- Demo 3 -->
+          <tr>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/Ya6RbnrOOc-M/Ya6RbnrOOc-M_text.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/Ya6RbnrOOc-M/Ya6RbnrOOc-M._audio.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <img src="./data/Ya6RbnrOOc-M/ground_truth_3.png" alt="Ground Truth Visualization" class="demo-img">
+            </td>
+          </tr>
+          <!-- Demo 4 -->
+          <tr>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/Y8XpFjwhNYUE/Y8XpFjwhNYUE_text.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/Y8XpFjwhNYUE/Y8XpFjwhNYUE_audio.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <img src="./data/Y8XpFjwhNYUE/ground_truth_4.png" alt="Ground Truth Visualization" class="demo-img">
+            </td>
+          </tr>
+          <!-- Demo 5 -->
+          <tr>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/Y9MWHXCLAX8I/Y9MWHXCLAX8I_text.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <video controls class="demo-video">
+                <source src="./data/Y9MWHXCLAX8I/Y9MWHXCLAX8I_audio.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </td>
+            <td>
+              <img src="./data/Y9MWHXCLAX8I/ground_truth_5.png" alt="Ground Truth Visualization" class="demo-img">
+            </td>
+          </tr>
+          <!-- 根据需要添加更多 Demo 样例 -->
+        </tbody>
+      </table>
+    </div>
+  </section>
+</body>
+
+</html>

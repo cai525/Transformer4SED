@@ -1,0 +1,53 @@
+/* style.css */
+/* 背景设置为轻微渐变，效果更加清新 */
+body {
+  background: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+
+/* 表格样式 */
+.demo-table {
+  width: 100%;
+  margin-top: 20px;
+  /* 添加阴影及圆角效果 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.demo-table th,
+.demo-table td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 10px;
+}
+
+/* 视频和图片自适应 */
+.demo-video,
+.demo-img {
+  max-width: 100%;
+  height: auto;
+}
+
+.title-header {
+  margin-top: 30px;
+}
+
+.description {
+  margin-bottom: 40px;
+}
+
+
+
+li {
+  list-style-type: circle;
+  margin-left: 20px;
+  margin-bottom: 5px;
+}
+
+li li {
+  list-style-type: square;
+  margin-left: 40px;
+  margin-bottom: 0px;
+}

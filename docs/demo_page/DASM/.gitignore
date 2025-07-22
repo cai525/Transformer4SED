@@ -1,0 +1,9 @@
+*.pyc
+.vscode
+*.ckpt
+.idea
+experiments
+playground
+validation_ijbs
+*.pkl
+*.csv
