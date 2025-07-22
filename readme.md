@@ -12,7 +12,7 @@ Transformer4SED is a  repository which aims to collect Transformer-based sound e
 ## recipes
 
 ### [DASM (MM 2025)](./docs/DASM/readme.md)
-Traditional sound event detection algorithms can only recognize pre-defined audio events from the training set and are incapable of detecting unseen categories, which greatly limits their applicability in real-world scenarios. In this work, we propose a model named "Detect Any Sound", an open-vocabulary sound event detection system that enables the detection of arbitrary sound events guided by multi-modal queries such as text or audio. Experimental results demonstrate that the proposed method not only exhibits strong open-vocabulary detection capabilities but also retains the fine-grained detection performance of closed-set models.
+Traditional sound event detection algorithms can only recognize pre-defined audio events from the training set and are incapable of detecting unseen categories, which greatly limits their applicability in real-world scenarios. In this work, we propose a model named **"Detect Any Sound"**, an open-vocabulary sound event detection system that enables the detection of arbitrary sound events guided by multi-modal queries including text or audio. Experimental results demonstrate that the proposed method not only exhibits strong open-vocabulary detection capabilities but also retains the fine-grained detection performance of closed-set models.
 
 <div align="center"><img src="./docs/demo_page/DASM/data/main.png" width=60%></div>
 
