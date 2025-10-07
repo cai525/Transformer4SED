@@ -43,6 +43,10 @@ git clone git@github.com:Ming-er/MGA-CLAP.git
 
 3. The inference script is located at [./recipes/audioset_strong/detect_any_sound/detect_any_sound.ipynb](recipes/audioset_strong/detect_any_sound/detect_any_sound.ipynb).
 
+
+## Setting of the AS-partial expriment
+Read [../../meta/audioset_strong/readme.md](../../meta/audioset_strong/readme.md) for detail.
+
 ## TODO
 - [x] Deploy the web demo;  
 - [x] Release model and inference code;  
