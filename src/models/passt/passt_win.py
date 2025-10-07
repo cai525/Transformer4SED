@@ -23,7 +23,7 @@ class PasstWithSlide(EncoderSlideWindow):
     def encode(self, input: torch.Tensor) -> torch.Tensor:
         #patch-wise context modeling
         input = input.unsqueeze(1)
-        passt_out_dict = self.net.get_backbone_encoder()(input)
+        passt_out_dict = self.net.get_backbone()(input)
 
         # pooling along the frequency dimension
         if hasattr(self.net, "f_pool"):

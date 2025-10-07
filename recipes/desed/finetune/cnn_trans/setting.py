@@ -31,7 +31,7 @@ def get_param_lr(net: PaSST_CNN, configs: dict, logger: logging.Logger):
     lr_dict = configs["opt"]["param_groups"]
     assert len(lr_dict) == 4, "Configuration \"lr_dict\"'s length must be equal to 4"
     # ========================= set PaSST parameter =========================
-    passt_params = [p for p in net.patch_transformer.parameters()]
+    passt_params = [p for p in net.backbone.parameters()]
     passt_ids = [id(p) for p in passt_params]
     if not lr_dict["passt"]["step_lr"]:
         passt_lr = [{
@@ -43,7 +43,7 @@ def get_param_lr(net: PaSST_CNN, configs: dict, logger: logging.Logger):
         # step learning rate
         low_lr_params = []
         high_lr_params = []
-        for k, p in net.patch_transformer.named_parameters():
+        for k, p in net.backbone.named_parameters():
             match = re.search(r"blocks.(\d+)", k)
             if match and (12 - int(match.group(1)) <= lr_dict["passt"]["step_lr"]):
                 high_lr_params.append(p)
@@ -65,14 +65,14 @@ def get_param_lr(net: PaSST_CNN, configs: dict, logger: logging.Logger):
         }]
     # freeze the passt model when lr <= 0
     if lr_dict["passt"]["lr"] <= 0:
-        for k, p in net.patch_transformer.named_parameters():
+        for k, p in net.backbone.named_parameters():
             if "norm." not in k:  # Don't fix the last norm layer
                 p.requires_grad = False
             else:
                 logger.info("{0} is trainable".format(k))
     # Freeze the blocks whose id is less than the lr_dict["passt"]["freeze_layer"]
     elif lr_dict["passt"]["freeze_layer"] > 0:
-        for k, p in net.patch_transformer.named_parameters():
+        for k, p in net.backbone.named_parameters():
             match = re.search(r"blocks.(\d+)", k)
             if match and (int(match.group(1)) + 1 > lr_dict["passt"]["freeze_layer"]):
                 logger.debug("<DEBUG> param {0}:  requires_grad = {1}".format(k, p.requires_grad))

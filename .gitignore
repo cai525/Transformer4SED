@@ -8,3 +8,5 @@ __pycache__/
 *.pth
 *.ckpt
 run/
+third_parties/
+pretrained_model/

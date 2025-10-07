@@ -104,7 +104,7 @@ if __name__ == "__main__":
     else:
         raise RuntimeError("Unknown model structure.")
 
-    mark_only_lora_as_trainable(net.patch_transformer)
+    mark_only_lora_as_trainable(net.backbone)
 
     # set encoder
     encoder = get_encoder(configs)

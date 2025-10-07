@@ -43,7 +43,7 @@ class PasstComplexCNN(PaSST_SED):
         x = input['trans'].unsqueeze(1)
 
         #patch-wise context modeling
-        passt_out_dict = self.patch_transformer(x)
+        passt_out_dict = self.backbone(x)
         # pooling
         x = self.f_pool(passt_out_dict)
         x = torch.cat((x, x[:, -1, :].unsqueeze(1)), dim=1)

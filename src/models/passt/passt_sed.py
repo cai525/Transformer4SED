@@ -107,15 +107,15 @@ class PaSST_SED(SEDModel):
 
         if load_pretrained_model:
 
-            self.patch_transformer = PaSST(**passt_params_dict)
+            self.backbone = PaSST(**passt_params_dict)
 
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
             sd = torch.load('./pretrained_model/passt-s-f128-p16-s10-ap.476-swa.pt', map_location=device)
-            self.patch_transformer.load_state_dict(sd, strict=False)
+            self.backbone.load_state_dict(sd, strict=False)
 
         else:
-            self.patch_transformer = PaSST(**passt_params_dict)
+            self.backbone = PaSST(**passt_params_dict)
 
         self.f_pool_name = f_pool
         self.passt_feature_layer = passt_feature_layer
@@ -252,7 +252,7 @@ class PaSST_SED(SEDModel):
         input = input.unsqueeze(1)
 
         #patch-wise context modeling
-        passt_out_dict = self.patch_transformer(input)
+        passt_out_dict = self.backbone(input)
         # pooling
         x = self.f_pool(passt_out_dict)
         x = torch.cat((x, x[:, -1, :].unsqueeze(1)), dim=1)  # padding from 99 frames to 100 frames
@@ -298,11 +298,11 @@ class PaSST_SED(SEDModel):
     def get_feature_extractor(self):
         return self.mel_trans
 
-    def get_backbone_encoder(self):
-        return self.patch_transformer
-
     def get_model_name(self):
         return "PaSST_SED"
 
     def get_backbone_upsample_ratio(self):
         return self.decode_ratio
+
+    def get_backbone(self):
+        return self.backbone

@@ -145,7 +145,7 @@ class ConformerDecoder(nn.Module):
                 dim_feedforward=int(input_dim * mlp_ratio),
                 cnn_module_kernel=kenrel_size,
                 dilation=dilation,
-                attn_drop=attn_drop,
+                dropout=attn_drop,
             ) for i in range(decoder_layer_num)
         ])
 
