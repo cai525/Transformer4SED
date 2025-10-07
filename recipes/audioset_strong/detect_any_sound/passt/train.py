@@ -33,7 +33,7 @@ def multi_class_to_multi_label(multi_class_pred: torch.Tensor):
     return multi_label_pred
 
 
-class MaskformerTrainer(Trainer):
+class DASMTrainer(Trainer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

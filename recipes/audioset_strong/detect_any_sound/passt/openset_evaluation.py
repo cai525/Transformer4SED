@@ -14,11 +14,11 @@ os.chdir(root)
 sys.path.append(root)
 
 from recipes.audioset_strong.setting import *
-from recipes.desed.maskformer.maskformer.finetune.setting import get_logger
-from recipes.audioset_strong.maskformer.passt.train import MaskformerTrainer
+from recipes.desed.detect_any_sound.detect_any_sound.finetune.setting import get_logger
+from recipes.audioset_strong.detect_any_sound.passt.train import DASMTrainer
 from src.codec.encoder import Encoder
 from src.codec.decoder import batched_decode_preds
-from src.models.maskformer.maskformer import Maskformer
+from src.models.detect_any_sound.detect_any_sound import DASM
 from src.utils.statistics.model_statistic import count_parameters
 from src.utils import load_yaml_with_relative_ref
 
@@ -62,7 +62,7 @@ def prepare_run():
     return configs, my_logger, args
 
 
-def openset_eval(trainer: MaskformerTrainer, query: torch.Tensor):
+def openset_eval(trainer: DASMTrainer, query: torch.Tensor):
     trainer.net.eval()
     n_test = len(trainer.test_loader)
     # score buffer
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     configs, my_logger, args = prepare_run()
 
     # set network
-    net = Maskformer(**configs["Maskformer"]["init_kwargs"])
+    net = DASM(**configs["DASM"]["init_kwargs"])
 
     # class label dictionary
     label_dict = get_labeldict_audioset_strong(configs['dataset']['label_dict_path'])
@@ -152,7 +152,7 @@ if __name__ == "__main__":
         net_pooling=configs["feature"]["net_subsample"],
         sr=configs["feature"]["sr"],
     )
-    # set text query for the maskformer
+    # set text query for the detect_any_sound
     extra_query = torch.load(args.openset_embedding)
     query = torch.cat((net.at_query, extra_query))
     logging.info("<INFO> shape of query  is {}".format(query.shape))
@@ -179,7 +179,7 @@ if __name__ == "__main__":
     else:
         logging.warning("Run with only single GPU!")
 
-    trainer = MaskformerTrainer(
+    trainer = DASMTrainer(
         optimizer=None,
         my_logger=my_logger,
         net=net,

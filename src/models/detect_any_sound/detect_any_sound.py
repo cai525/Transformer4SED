@@ -15,7 +15,7 @@ from src.models.detect_any_sound.at_adapter import QueryBasedAudioTaggingDecoder
 from src.models.cnn import CNN
 
 
-class DetectAnySoundModel(SEDModel):
+class DASM(SEDModel):
 
     def __init__(
         self,
@@ -389,7 +389,7 @@ class DetectAnySoundModel(SEDModel):
         return sed_out.transpose(1, 2), weak_out, other_dict
 
     def get_model_name(self):
-        return "Maskformer"
+        return "DASM"
 
     def get_feature_extractor(self):
         return self.mel_trans

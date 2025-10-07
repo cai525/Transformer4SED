@@ -4,12 +4,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from src.models.detect_any_sound.detect_any_sound import DetectAnySoundModel
+from src.models.detect_any_sound.detect_any_sound import DASM
 from src.models.htsat.htsat import CLAPAudioCfp, create_htsat_model
 from src.models.passt.passt_sed import InterpolateModule
 
 
-class DASM_HTSAT(DetectAnySoundModel):
+class DASM_HTSAT(DASM):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -29,7 +29,7 @@ class DASM_HTSAT(DetectAnySoundModel):
         self.backbone.load_state_dict(torch.load(backbone_param["pretrain_model_path"]))
 
     def f_pool(self, passt_out_dict):
-        raise NotImplementedError("Method 'f_pool' is not supported by Maskformer_HTAST")
+        raise NotImplementedError("Method 'f_pool' is not supported by DASM_HTAST")
 
     def forward(
         self,
@@ -113,7 +113,7 @@ class DASM_HTSAT(DetectAnySoundModel):
         return sed_out.transpose(1, 2), weak_out, other_dict
 
     def get_model_name(self):
-        return 'Maskformer_HTSAT'
+        return 'DASM_HTSAT'
 
     def get_feature_extractor(self, mixup_lambda=None):
         return lambda wav: self.backbone.wav2mel(wav, mixup_lambda)

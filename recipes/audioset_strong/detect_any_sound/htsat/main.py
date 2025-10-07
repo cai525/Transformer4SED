@@ -20,7 +20,7 @@ if __name__ == "__main__":
     configs, my_logger, args = prepare_run()
 
     # set network
-    net = DASM_HTSAT(**configs["Maskformer_HTSAT"]["init_kwargs"])
+    net = DASM_HTSAT(**configs["DASM_HTSAT"]["init_kwargs"])
     total_lr = get_lr_htsat(net, configs, my_logger.logger)
 
     encoder = get_encoder(configs)

@@ -7,13 +7,13 @@ import torch.nn as nn
 import torchmetrics
 from tqdm import tqdm
 
-from recipes.audioset_strong.maskformer.passt.train import MaskformerTrainer
+from recipes.audioset_strong.detect_any_sound.passt.train import DASMTrainer
 from src.codec.decoder import batched_decode_preds
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 
 
-class OV_Maskformer_Trainer(MaskformerTrainer):
+class OV_DASM_Trainer(DASMTrainer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

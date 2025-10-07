@@ -12,18 +12,18 @@ os.chdir(root)
 sys.path.append(root)
 
 from recipes.audioset_strong.setting import prepare_run, get_encoder, dataset_setting, optimizer_and_scheduler_setting, BestModels
-from recipes.desed.maskformer.maskformer.finetune.setting import get_param_lr
-from recipes.audioset_strong.maskformer.passt.train import MaskformerTrainer
-from recipes.audioset_strong.maskformer.passt.open_vocabulary import OV_Maskformer_Trainer
-from src.models.maskformer.maskformer import Maskformer
+from recipes.desed.detect_any_sound.detect_any_sound.finetune.setting import get_param_lr
+from recipes.audioset_strong.detect_any_sound.passt.train import DASMTrainer
+from recipes.audioset_strong.detect_any_sound.passt.open_vocabulary import OV_DASM_Trainer
+from src.models.detect_any_sound.detect_any_sound import DASM
 from src.models.lora.utils import mark_only_lora_as_trainable
 
 if __name__ == "__main__":
     configs, my_logger, args = prepare_run()
 
     # set network
-    net = Maskformer(**configs["Maskformer"]["init_kwargs"])
-    if configs["Maskformer"]["init_kwargs"]["backbone_param"]["lora_config"] is not None:
+    net = DASM(**configs["DASM"]["init_kwargs"])
+    if configs["DASM"]["init_kwargs"]["backbone_param"]["lora_config"] is not None:
         mark_only_lora_as_trainable(net.backbone)
     total_lr = get_param_lr(net, configs, my_logger.logger)
 
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     net = net.to(configs["training"]["device"])
 
     ##############################                TRAIN/VALIDATION                ##############################
-    Trainer_class = MaskformerTrainer if not args.open_vocabulary else OV_Maskformer_Trainer
+    Trainer_class = DASMTrainer if not args.open_vocabulary else OV_DASM_Trainer
     trainer = Trainer_class(optimizer=optimizer,
                             my_logger=my_logger,
                             net=net,

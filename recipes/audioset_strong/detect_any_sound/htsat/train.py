@@ -4,13 +4,13 @@ import random
 import numpy as np
 import torch
 
-from recipes.audioset_strong.detect_any_sound.passt.train import MaskformerTrainer, pool_strong_labels
+from recipes.audioset_strong.detect_any_sound.passt.train import DASMTrainer, pool_strong_labels
 
 logging.getLogger('matplotlib.font_manager').disabled = True
 logging.getLogger('numba').setLevel(logging.WARNING)
 
 
-class DASM_HTSAT_Trainer(MaskformerTrainer):
+class DASM_HTSAT_Trainer(DASMTrainer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -81,7 +81,7 @@ def remove_absent_label(config, label_list):
     config["dataset"]["openset_dur"] = obj_dur_path
 
 
-class Openset_Maskformer_HTSAT_Evaluator(DASM_HTSAT_Trainer):
+class Openset_DASM_HTSAT_Evaluator(DASM_HTSAT_Trainer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -155,7 +155,7 @@ if __name__ == "__main__":
     configs, my_logger, args = prepare_run()
 
     # set network
-    net = DASM_HTSAT(**configs["Maskformer_HTSAT"]["init_kwargs"])
+    net = DASM_HTSAT(**configs["DASM_HTSAT"]["init_kwargs"])
 
     # class label dictionary
     with open(configs['dataset']['label_dict_path']) as f:
@@ -222,7 +222,7 @@ if __name__ == "__main__":
     #### move to gpus ########
     net = net.to(configs["training"]["device"])
 
-    evaluator = Openset_Maskformer_HTSAT_Evaluator(
+    evaluator = Openset_DASM_HTSAT_Evaluator(
         optimizer=None,
         my_logger=my_logger,
         net=net,

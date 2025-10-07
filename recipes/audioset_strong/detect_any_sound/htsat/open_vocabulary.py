@@ -4,13 +4,13 @@ import random
 import numpy as np
 import torch
 
-from recipes.audioset_strong.detect_any_sound.passt.open_vocabulary import OV_Maskformer_Trainer
+from recipes.audioset_strong.detect_any_sound.passt.open_vocabulary import OV_DASM_Trainer
 from recipes.audioset_strong.detect_any_sound.passt.train import pool_strong_labels
 
 logging.getLogger('numba').setLevel(logging.WARNING)
 
 
-class OV_DASM_HTSAT_Trainer(OV_Maskformer_Trainer):
+class OV_DASM_HTSAT_Trainer(OV_DASM_Trainer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
