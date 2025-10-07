@@ -17,7 +17,7 @@ Science and Technology of China, China</strong>,</span>
 <p>
     <a href="https://cai525.github.io/Transformer4SED/demo_page/DASM/index.html" target="_blank"><img src="https://img.shields.io/badge/Project-Demo_page-green" alt="demo homepage"></a>
     <a href="http://arxiv.org/abs/2507.16343" target="_blank"><img src="https://img.shields.io/badge/arXiv-2507.16343-red" alt="demo homepage"></a>
-    <a href="https://huggingface.co/CPF2/detect_any_sound_model/tree/main" target="_blank"><img src="https://img.shields.io/badge/huggingface-model_weights-yellow" alt="huggingface"></a>
+    <a href="https://huggingface.co/CPF2/detect_any_sound/tree/main" target="_blank"><img src="https://img.shields.io/badge/huggingface-model_weights-yellow" alt="huggingface"></a>
 <p>
 </div>
 
