@@ -15,7 +15,7 @@ from src.models.detect_any_sound.at_adapter import QueryBasedAudioTaggingDecoder
 from src.models.cnn import CNN
 
 
-class Maskformer(SEDModel):
+class DetectAnySoundModel(SEDModel):
 
     def __init__(
         self,
