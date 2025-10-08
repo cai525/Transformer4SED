@@ -41,7 +41,7 @@ git clone git@github.com:Ming-er/MGA-CLAP.git
 ```
 
 
-3. The inference script is located at [./recipes/audioset_strong/detect_any_sound/detect_any_sound.ipynb](recipes/audioset_strong/detect_any_sound/detect_any_sound.ipynb).
+3. The inference script is located at [./recipes/audioset_strong/detect_any_sound/detect_any_sound.ipynb](../../recipes/audioset_strong/detect_any_sound/detect_any_sound.ipynb).
 
 
 ## Setting of the AS-partial expriment
