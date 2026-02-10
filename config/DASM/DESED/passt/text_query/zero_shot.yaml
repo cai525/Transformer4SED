@@ -1,0 +1,12 @@
+include:
+  base_path: ./config/DASM/DESED/passt/text_query/finetune.yaml
+  keys: [training, feature, MaskformerWrapper, dataset, class_loss, opt]
+
+generals:
+  warn: False                          # show warnings
+  savepsds: False                       # save psds data
+  test_on_public_eval: False           # change test dataset to DESED Reak public_eval (default dataset is DESED Real Validation)
+  load_from_existed_path: True         # Load model in existed path instead of creating a new one if true
+  test_only: True                     # perform test without training, for the model saved in save_folder
+  validation_interval: 1
+  log_level: DEBUG

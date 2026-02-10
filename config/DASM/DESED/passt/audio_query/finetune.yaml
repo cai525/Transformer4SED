@@ -1,0 +1,70 @@
+include:
+  base_path: ./config/DASM/DESED/passt/text_query/finetune.yaml
+  keys: [generals, training, feature, dataset, synth_dataset, class_loss, opt]
+
+generals:
+  warn: False                          # show warnings
+  savepsds: False                       # save psds data
+  test_on_public_eval: False           # change test dataset to DESED Reak public_eval (default dataset is DESED Real Validation)
+  load_from_existed_path: True         # Load model in existed path instead of creating a new one if true
+  finetune_mlm: False
+  test_only: False                     # perform test without training, for the model saved in save_folder
+  validation_interval: 1
+  log_level: DEBUG
+
+
+MaskformerWrapper:
+  init_kwargs:
+    base_kwargs:
+      backbone_param:
+        embed_dim: 768
+        passt_feature_layer: 10
+        pretrain_model_path: ./pretrained_model/passt-s-f128-p16-s10-ap.476-swa.pt
+        lora_config:       
+          r: 64
+          lora_alpha: 1
+        
+      cnn_param:
+        n_in_channel: 1
+        activation: cg
+        conv_dropout: 0.5
+        kernel_size: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+        padding: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        stride: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        nb_filters: [ 16, 16, 32, 32, 64, 64, 128, 128, 256, 384]
+        pooling: [ [ 2, 2 ], [1, 1], [ 2, 2 ],[1, 1], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [1, 1] ]
+      at_param:
+        at_decoder_layer: 2
+        query_projector: True
+        out_type: "sigmoid"
+        query_dim: 768
+        query: ./exps/mm2025/AS/archive/audio_embedding/as_407.pt
+
+      backbone_upsample_ratio: 5                     # decode ratio in local gru decoder
+      decoder_dim: 384
+      num_heads: 12
+      decoder: "conformer"
+      decoder_layer_num: 2
+      decoder_pos_emd_len: 500
+      decoder_expand_rate: 1
+      class_num: 407
+    query_path: ./exps/mm2025/DESED/archive/audio_embedding/desed.pt
+
+  train_stu_kwargs:
+    # windows parameters
+    encoder_win: False    # constant
+    # temperature parameters
+    temp_w: 1
+    
+  train_tch_kwargs:
+    # windows parameters
+    encoder_win: False
+    temp_w: 1
+
+  val_kwargs:
+    # windows parameters
+    encoder_win: True
+    mix_rate: 0.5
+    win_param: [512, 49]
+    temp_w: 0.5
+    

@@ -1,0 +1,129 @@
+generals:
+  warn: False                          # show warnings
+  savepsds: False                       # save psds data
+  test_on_public_eval: False           # change test dataset to DESED Reak public_eval (default dataset is DESED Real Validation)
+  load_from_existed_path: False         # Load model in existed path instead of creating a new one if true
+  finetune_mlm: False
+  test_only: False                     # perform test without training, for the model saved in save_folder
+  validation_interval: 1
+  log_level: DEBUG
+
+training:
+  batch_size: 36
+  batch_size_val: 72
+  num_workers: 6
+  seed: 21
+  clip_grad: True
+  # =============================
+  scheduler:
+    scheduler_name: ExponentialDown
+    n_epochs: 6                        #>> number of epochs to run
+    n_epochs_cut: 2                  #>> number of epochs used for exponential warmup
+    exponent: -1.5
+    lr_warmup_epochs: 0
+    lr_warmup_rate: 0.1
+  # =============================
+  median_window: 5
+
+feature:                               
+  pred_len: 500
+  n_mels: 64
+  n_fft: 1024
+  hopsize: 320
+  win_length: 1024
+  fmin: 50
+  fmax: 14000
+  audio_max_len: 10
+  sr: 32000
+  net_subsample: 2
+
+
+HTSAT_CNN:
+  init_kwargs:
+    backbone_param:
+      embed_dim: 768
+      pretrain_model_path: exps/mm2025/AS/archive/model/htast_mga.pt
+      lora_config: 
+    cnn_param:
+      n_in_channel: 1
+      activation: cg
+      conv_dropout: 0.5
+      kernel_size: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+      padding: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      stride: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      nb_filters: [ 16, 16, 32, 32, 64, 64, 128, 128, 256, 256]
+      pooling: [ [ 2, 2 ], [1, 1], [ 2, 2 ],[1, 1], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 1 ], [1, 1] ]
+    backbone_upsample_ratio: 15.626                     # decode ratio in local gru decoder
+    decoder_dim: 384
+    num_heads: 12
+    decoder: "conformer"
+    decoder_layer_num: 2
+    decoder_pos_emd_len: 500
+    decoder_expand_rate: 1
+    class_num: 407
+
+  train_kwargs:
+    # windows parameters
+    encoder_win: False    # constant
+    win_param: [512, 49]
+    mix_rate: 0.5 
+    # temperature parameters
+    temp_w: 1
+    
+  val_kwargs:
+    # windows parameters
+    encoder_win: False
+    win_param: [512, 49]
+    mix_rate: 0.5 
+    temp_w: 0.5
+
+  test_kwargs:
+    # windows parameters
+    encoder_win: False
+    temp_w: 0.5
+
+dataset:                               
+  label_dict_path: ./meta/audioset_strong/hierarchical/labeldict_ontology_audioset_strong.json
+  reweight_path: ./meta/audioset_strong/hierarchical/reweight.tsv
+  event_state: ./exps/mm2025/AS/archive/state.json
+
+  strong_folder: /home/cpf/data/audioset_strong/train_32k_real/
+  strong_tsv: ./meta/audioset_strong/hierarchical/train.tsv
+
+  val_folder: /home/cpf/data/audioset_strong/val_32k_real/
+  val_tsv: ./meta/audioset_strong/hierarchical/val.tsv
+  val_dur: ./meta/audioset_strong/divided/val_dur.tsv
+
+  test_folder: /home/cpf/data/audioset_strong/val_32k_real/
+  test_tsv: ./meta/audioset_strong/hierarchical/val.tsv
+  test_dur: ./meta/audioset_strong/divided/val_dur.tsv
+
+  pubeval_folder: 
+  pubeval_tsv: 
+  pubeval_dur: 
+
+  openset_folder: /home/cpf/data/audioset_strong/val_32k_real/
+  openset_tsv: ./meta/audioset_strong/hierarchical/dropped_val.tsv
+  openset_dur: ./meta/audioset_strong/divided/dropped_val_dur.tsv
+
+class_loss:
+  loss_name: AsymmetricalFocalLoss
+  kwargs: 
+    gamma: 0
+    zeta: 1
+
+opt:
+  param_groups: 
+    cnn:
+      lr: 3.0e-4
+      weight_decay: 1.0e-4
+    backbone:
+      lr: 0 
+      weight_decay: 1.0e-4
+      freeze_layer: 0
+    sed_decoder: 
+      lr: 3.0e-4 
+      weight_decay: 1.0e-4
+    head:
+      lr: 3.0e-4
+      weight_decay: 1.0e-4      

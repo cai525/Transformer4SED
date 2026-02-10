@@ -1,0 +1,124 @@
+include:
+  base_path: ./config/DASM/AS/htsat-sed/train1.yaml
+  keys: [dataset, class_loss]
+
+generals:
+  warn: False                          # show warnings
+  savepsds: False                       # save psds data
+  test_on_public_eval: False           # change test dataset to DESED Reak public_eval (default dataset is DESED Real Validation)
+  load_from_existed_path: False         # Load model in existed path instead of creating a new one if true
+  finetune_mlm: False
+  test_only: False                     # perform test without training, for the model saved in save_folder
+  validation_interval: 1
+  log_level: DEBUG
+
+training:
+  batch_size: 36
+  batch_size_val: 72
+  num_workers: 6
+  seed: 21
+  clip_grad: True
+  # =============================
+  scheduler:
+    scheduler_name: ExponentialDown
+    n_epochs: 8                        #>> number of epochs to run
+    n_epochs_cut: 2                  #>> number of epochs used for exponential warmup
+    exponent: -1.5
+    lr_warmup_epochs: 2
+    lr_warmup_rate: 0.1
+  # =============================
+  w_AT: 0.5
+  median_window: 5
+  transform:                           # hyperparameters for data augmentations that do not alter the label information.
+    n_transform: 1                    
+    choice: [ 1, 0, 0, 1]              # apply the chosen data augmentations: [ FilterAugment, freq_mask, add_noise, frequency disortion]
+    # arguments of FilterAugument
+    filter_db_range: [-26, 26]         # db range of FilterAugment to be applied on each band
+    filter_bands: [ 2, 5 ]             # range of frequency band number in FilterAugment
+    filter_minimum_bandwidth: 4
+    filter_type: step
+
+
+feature:                               
+  pred_len: 500
+  n_mels: 128
+  n_fft: 1024
+  hopsize: 320
+  win_length: 800
+  fmin: 0.0
+  fmax: None
+  audio_max_len: 10
+  sr: 32000
+  net_subsample: 2
+
+
+Maskformer:
+  init_kwargs:
+    backbone_param:
+      embed_dim: 768
+      passt_feature_layer: 10
+      pretrain_model_path: ./pretrained_model/passt-s-f128-p16-s10-ap.476-swa.pt
+      lora_config: 
+    cnn_param:
+      n_in_channel: 1
+      activation: cg
+      conv_dropout: 0.5
+      kernel_size: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+      padding: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      stride: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      nb_filters: [ 16, 16, 32, 32, 64, 64, 128, 128, 256, 384]
+      pooling: [ [ 2, 2 ], [1, 1], [ 2, 2 ],[1, 1], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [ 1, 2 ], [1, 1] ]
+    at_param:
+      at_decoder_layer: 2
+      query_projector: True
+      out_type: "sigmoid"
+      query_dim: 768
+      query: ./exps/mm2025/AS/archive/audio_embedding/as_407.pt
+
+    backbone_upsample_ratio: 5                     # decode ratio in local gru decoder
+    decoder_dim: 384
+    num_heads: 12
+    decoder: "conformer"
+    decoder_layer_num: 2
+    decoder_pos_emd_len: 500
+    decoder_expand_rate: 1
+    class_num: 407
+
+  train_kwargs:
+    # windows parameters
+    encoder_win: False    # constant
+    # temperature parameters
+    temp_w: 1
+    
+  val_kwargs:
+    # windows parameters
+    encoder_win: False
+    temp_w: 0.5
+
+  test_kwargs:
+    # windows parameters
+    encoder_win: False
+    temp_w: 0.5
+
+
+opt:
+  param_groups: 
+    cnn:
+      lr: 3.0e-4
+      weight_decay: 1.0e-4
+    backbone:
+      lr: 0 
+      weight_decay: 1.0e-4
+      freeze_layer: 0
+    sed_decoder: 
+      lr: 3.0e-4 
+      weight_decay: 1.0e-4
+    at_decoder:
+      lr: 3.0e-4 
+      weight_decay: 1.0e-4
+    query:
+      lr: 0
+      weight_decay: 1.0e-4
+    head:
+      lr: 3.0e-4
+      weight_decay: 1.0e-4      
